@@ -163,13 +163,13 @@ export async function startGatewayServer(
   if (configSnapshot.legacyIssues.length > 0) {
     if (isNixMode) {
       throw new Error(
-        "Legacy config entries detected while running in Nix mode. Update your Nix config to the latest schema and restart.",
+        "在 Nix 模式下检测到旧版配置项。请更新您的 Nix 配置至最新架构并重启。",
       );
     }
     const { config: migrated, changes } = migrateLegacyConfig(configSnapshot.parsed);
     if (!migrated) {
       throw new Error(
-        `Legacy config entries detected but auto-migration failed. Run "${formatCliCommand("openclaw doctor")}" to migrate.`,
+        `检测到旧版配置项但自动迁移失败。运行 "${formatCliCommand("openclaw doctor")}" 进行迁移。`,
       );
     }
     await writeConfigFile(migrated);
@@ -187,11 +187,11 @@ export async function startGatewayServer(
     const issues =
       configSnapshot.issues.length > 0
         ? configSnapshot.issues
-            .map((issue) => `${issue.path || "<root>"}: ${issue.message}`)
-            .join("\n")
+          .map((issue) => `${issue.path || "<root>"}: ${issue.message}`)
+          .join("\n")
         : "Unknown validation issue.";
     throw new Error(
-      `Invalid config at ${configSnapshot.path}.\n${issues}\nRun "${formatCliCommand("openclaw doctor")}" to repair, then retry.`,
+      `无效的配置位于 ${configSnapshot.path}。\n${issues}\n运行 "${formatCliCommand("openclaw doctor")}" 进行修复，然后重试。`,
     );
   }
 
@@ -267,7 +267,7 @@ export async function startGatewayServer(
   let canvasHostServer: CanvasHostServer | null = null;
   const gatewayTls = await loadGatewayTlsRuntime(cfgAtStart.gateway?.tls, log.child("tls"));
   if (cfgAtStart.gateway?.tls?.enabled && !gatewayTls.enabled) {
-    throw new Error(gatewayTls.error ?? "gateway tls: failed to enable");
+    throw new Error(gatewayTls.error ?? "网关 TLS: 启用失败");
   }
   const {
     canvasHost,

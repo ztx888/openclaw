@@ -79,21 +79,21 @@ export function renderStreamingGroup(
     hour: "numeric",
     minute: "2-digit",
   });
-  const name = assistant?.name ?? "Assistant";
+  const name = assistant?.name ?? "助手";
 
   return html`
     <div class="chat-group assistant">
       ${renderAvatar("assistant", assistant)}
       <div class="chat-group-messages">
         ${renderGroupedMessage(
-          {
-            role: "assistant",
-            content: [{ type: "text", text }],
-            timestamp: startedAt,
-          },
-          { isStreaming: true, showReasoning: false },
-          onOpenSidebar,
-        )}
+    {
+      role: "assistant",
+      content: [{ type: "text", text }],
+      timestamp: startedAt,
+    },
+    { isStreaming: true, showReasoning: false },
+    onOpenSidebar,
+  )}
         <div class="chat-group-footer">
           <span class="chat-sender-name">${name}</span>
           <span class="chat-group-timestamp">${timestamp}</span>
@@ -113,10 +113,10 @@ export function renderMessageGroup(
   },
 ) {
   const normalizedRole = normalizeRoleForGrouping(group.role);
-  const assistantName = opts.assistantName ?? "Assistant";
+  const assistantName = opts.assistantName ?? "助手";
   const who =
     normalizedRole === "user"
-      ? "You"
+      ? "你"
       : normalizedRole === "assistant"
         ? assistantName
         : normalizedRole;
@@ -130,20 +130,20 @@ export function renderMessageGroup(
   return html`
     <div class="chat-group ${roleClass}">
       ${renderAvatar(group.role, {
-        name: assistantName,
-        avatar: opts.assistantAvatar ?? null,
-      })}
+    name: assistantName,
+    avatar: opts.assistantAvatar ?? null,
+  })}
       <div class="chat-group-messages">
         ${group.messages.map((item, index) =>
-          renderGroupedMessage(
-            item.message,
-            {
-              isStreaming: group.isStreaming && index === group.messages.length - 1,
-              showReasoning: opts.showReasoning,
-            },
-            opts.onOpenSidebar,
-          ),
-        )}
+    renderGroupedMessage(
+      item.message,
+      {
+        isStreaming: group.isStreaming && index === group.messages.length - 1,
+        showReasoning: opts.showReasoning,
+      },
+      opts.onOpenSidebar,
+    ),
+  )}
         <div class="chat-group-footer">
           <span class="chat-sender-name">${who}</span>
           <span class="chat-group-timestamp">${timestamp}</span>
@@ -155,7 +155,7 @@ export function renderMessageGroup(
 
 function renderAvatar(role: string, assistant?: Pick<AssistantIdentity, "name" | "avatar">) {
   const normalized = normalizeRoleForGrouping(role);
-  const assistantName = assistant?.name?.trim() || "Assistant";
+  const assistantName = assistant?.name?.trim() || "助手";
   const assistantAvatar = assistant?.avatar?.trim() || "";
   const initial =
     normalized === "user"
@@ -202,15 +202,15 @@ function renderMessageImages(images: ImageBlock[]) {
   return html`
     <div class="chat-message-images">
       ${images.map(
-        (img) => html`
+    (img) => html`
           <img
             src=${img.url}
-            alt=${img.alt ?? "Attached image"}
+            alt=${img.alt ?? "附件图片"}
             class="chat-message-image"
             @click=${() => window.open(img.url, "_blank")}
           />
         `,
-      )}
+  )}
     </div>
   `;
 }
@@ -263,18 +263,16 @@ function renderGroupedMessage(
     <div class="${bubbleClasses}">
       ${canCopyMarkdown ? renderCopyAsMarkdownButton(markdown!) : nothing}
       ${renderMessageImages(images)}
-      ${
-        reasoningMarkdown
-          ? html`<div class="chat-thinking">${unsafeHTML(
-              toSanitizedMarkdownHtml(reasoningMarkdown),
-            )}</div>`
-          : nothing
-      }
-      ${
-        markdown
-          ? html`<div class="chat-text">${unsafeHTML(toSanitizedMarkdownHtml(markdown))}</div>`
-          : nothing
-      }
+      ${reasoningMarkdown
+      ? html`<div class="chat-thinking">${unsafeHTML(
+        toSanitizedMarkdownHtml(reasoningMarkdown),
+      )}</div>`
+      : nothing
+    }
+      ${markdown
+      ? html`<div class="chat-text">${unsafeHTML(toSanitizedMarkdownHtml(markdown))}</div>`
+      : nothing
+    }
       ${toolCards.map((card) => renderToolCardSidebar(card, onOpenSidebar))}
     </div>
   `;

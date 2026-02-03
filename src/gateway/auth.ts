@@ -227,11 +227,11 @@ export function assertGatewayAuthConfigured(auth: ResolvedGatewayAuth): void {
       return;
     }
     throw new Error(
-      "gateway auth mode is token, but no token was configured (set gateway.auth.token or OPENCLAW_GATEWAY_TOKEN)",
+      "网关认证模式为 token，但未配置 token (请设置 gateway.auth.token 或 OPENCLAW_GATEWAY_TOKEN)",
     );
   }
   if (auth.mode === "password" && !auth.password) {
-    throw new Error("gateway auth mode is password, but no password was configured");
+    throw new Error("网关认证模式为 password，但未配置 password");
   }
 }
 

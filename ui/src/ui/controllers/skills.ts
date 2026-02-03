@@ -56,7 +56,7 @@ export async function loadSkills(state: SkillsState, options?: LoadSkillsOptions
   state.skillsLoading = true;
   state.skillsError = null;
   try {
-    const res = await state.client.request("skills.status", {});
+    const res = (await state.client.request("skills.status", {})) as SkillStatusReport | null;
     if (res) {
       state.skillsReport = res;
     }
@@ -82,7 +82,7 @@ export async function updateSkillEnabled(state: SkillsState, skillKey: string, e
     await loadSkills(state);
     setSkillMessage(state, skillKey, {
       kind: "success",
-      message: enabled ? "Skill enabled" : "Skill disabled",
+      message: enabled ? "技能已启用" : "技能已禁用",
     });
   } catch (err) {
     const message = getErrorMessage(err);
@@ -108,7 +108,7 @@ export async function saveSkillApiKey(state: SkillsState, skillKey: string) {
     await loadSkills(state);
     setSkillMessage(state, skillKey, {
       kind: "success",
-      message: "API key saved",
+      message: "API 密钥已保存",
     });
   } catch (err) {
     const message = getErrorMessage(err);
@@ -134,15 +134,15 @@ export async function installSkill(
   state.skillsBusyKey = skillKey;
   state.skillsError = null;
   try {
-    const result = await state.client.request("skills.install", {
+    const result = (await state.client.request("skills.install", {
       name,
       installId,
       timeoutMs: 120000,
-    });
+    })) as { message?: string } | null;
     await loadSkills(state);
     setSkillMessage(state, skillKey, {
       kind: "success",
-      message: result?.message ?? "Installed",
+      message: result?.message ?? "已安装",
     });
   } catch (err) {
     const message = getErrorMessage(err);

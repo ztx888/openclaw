@@ -3,9 +3,9 @@ import { icons } from "../icons";
 
 const COPIED_FOR_MS = 1500;
 const ERROR_FOR_MS = 2000;
-const COPY_LABEL = "Copy as markdown";
-const COPIED_LABEL = "Copied";
-const ERROR_LABEL = "Copy failed";
+const COPY_LABEL = "复制为 Markdown";
+const COPIED_LABEL = "已复制";
+const ERROR_LABEL = "复制失败";
 
 type CopyButtonOptions = {
   text: () => string;
@@ -39,50 +39,50 @@ function createCopyButton(options: CopyButtonOptions): TemplateResult {
       title=${idleLabel}
       aria-label=${idleLabel}
       @click=${async (e: Event) => {
-        const btn = e.currentTarget as HTMLButtonElement | null;
+      const btn = e.currentTarget as HTMLButtonElement | null;
 
-        if (!btn || btn.dataset.copying === "1") {
-          return;
-        }
+      if (!btn || btn.dataset.copying === "1") {
+        return;
+      }
 
-        btn.dataset.copying = "1";
-        btn.setAttribute("aria-busy", "true");
-        btn.disabled = true;
+      btn.dataset.copying = "1";
+      btn.setAttribute("aria-busy", "true");
+      btn.disabled = true;
 
-        const copied = await copyTextToClipboard(options.text());
-        if (!btn.isConnected) {
-          return;
-        }
+      const copied = await copyTextToClipboard(options.text());
+      if (!btn.isConnected) {
+        return;
+      }
 
-        delete btn.dataset.copying;
-        btn.removeAttribute("aria-busy");
-        btn.disabled = false;
+      delete btn.dataset.copying;
+      btn.removeAttribute("aria-busy");
+      btn.disabled = false;
 
-        if (!copied) {
-          btn.dataset.error = "1";
-          setButtonLabel(btn, ERROR_LABEL);
-
-          window.setTimeout(() => {
-            if (!btn.isConnected) {
-              return;
-            }
-            delete btn.dataset.error;
-            setButtonLabel(btn, idleLabel);
-          }, ERROR_FOR_MS);
-          return;
-        }
-
-        btn.dataset.copied = "1";
-        setButtonLabel(btn, COPIED_LABEL);
+      if (!copied) {
+        btn.dataset.error = "1";
+        setButtonLabel(btn, ERROR_LABEL);
 
         window.setTimeout(() => {
           if (!btn.isConnected) {
             return;
           }
-          delete btn.dataset.copied;
+          delete btn.dataset.error;
           setButtonLabel(btn, idleLabel);
-        }, COPIED_FOR_MS);
-      }}
+        }, ERROR_FOR_MS);
+        return;
+      }
+
+      btn.dataset.copied = "1";
+      setButtonLabel(btn, COPIED_LABEL);
+
+      window.setTimeout(() => {
+        if (!btn.isConnected) {
+          return;
+        }
+        delete btn.dataset.copied;
+        setButtonLabel(btn, idleLabel);
+      }, COPIED_FOR_MS);
+    }}
     >
       <span class="chat-copy-btn__icon" aria-hidden="true">
         <span class="chat-copy-btn__icon-copy">${icons.copy}</span>

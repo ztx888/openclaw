@@ -71,6 +71,7 @@ export type ChatProps = {
 };
 
 const COMPACTION_TOAST_DURATION_MS = 5000;
+const CHAT_HISTORY_RENDER_LIMIT = 100;
 
 function adjustTextareaHeight(el: HTMLTextAreaElement) {
   el.style.height = "auto";
@@ -86,7 +87,7 @@ function renderCompactionIndicator(status: CompactionIndicatorStatus | null | un
   if (status.active) {
     return html`
       <div class="callout info compaction-indicator compaction-indicator--active">
-        ${icons.loader} Compacting context...
+        ${icons.loader} 正在压缩上下文...
       </div>
     `;
   }
@@ -97,7 +98,7 @@ function renderCompactionIndicator(status: CompactionIndicatorStatus | null | un
     if (elapsed < COMPACTION_TOAST_DURATION_MS) {
       return html`
         <div class="callout success compaction-indicator compaction-indicator--complete">
-          ${icons.check} Context compacted
+          ${icons.check} 上下文压缩完成
         </div>
       `;
     }
@@ -106,370 +107,233 @@ function renderCompactionIndicator(status: CompactionIndicatorStatus | null | un
   return nothing;
 }
 
-function generateAttachmentId(): string {
-  return `att-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
-}
-
-function handlePaste(e: ClipboardEvent, props: ChatProps) {
-  const items = e.clipboardData?.items;
-  if (!items || !props.onAttachmentsChange) {
-    return;
-  }
-
-  const imageItems: DataTransferItem[] = [];
-  for (let i = 0; i < items.length; i++) {
-    const item = items[i];
-    if (item.type.startsWith("image/")) {
-      imageItems.push(item);
-    }
-  }
-
-  if (imageItems.length === 0) {
-    return;
-  }
-
-  e.preventDefault();
-
-  for (const item of imageItems) {
-    const file = item.getAsFile();
-    if (!file) {
-      continue;
-    }
-
-    const reader = new FileReader();
-    reader.addEventListener("load", () => {
-      const dataUrl = reader.result as string;
-      const newAttachment: ChatAttachment = {
-        id: generateAttachmentId(),
-        dataUrl,
-        mimeType: file.type,
-      };
-      const current = props.attachments ?? [];
-      props.onAttachmentsChange?.([...current, newAttachment]);
-    });
-    reader.readAsDataURL(file);
-  }
-}
-
-function renderAttachmentPreview(props: ChatProps) {
-  const attachments = props.attachments ?? [];
-  if (attachments.length === 0) {
-    return nothing;
-  }
-
-  return html`
-    <div class="chat-attachments">
-      ${attachments.map(
-        (att) => html`
-          <div class="chat-attachment">
-            <img
-              src=${att.dataUrl}
-              alt="Attachment preview"
-              class="chat-attachment__img"
-            />
-            <button
-              class="chat-attachment__remove"
-              type="button"
-              aria-label="Remove attachment"
-              @click=${() => {
-                const next = (props.attachments ?? []).filter((a) => a.id !== att.id);
-                props.onAttachmentsChange?.(next);
-              }}
-            >
-              ${icons.x}
-            </button>
-          </div>
-        `,
-      )}
-    </div>
-  `;
-}
-
 export function renderChat(props: ChatProps) {
-  const canCompose = props.connected;
-  const isBusy = props.sending || props.stream !== null;
-  const canAbort = Boolean(props.canAbort && props.onAbort);
-  const activeSession = props.sessions?.sessions?.find((row) => row.key === props.sessionKey);
-  const reasoningLevel = activeSession?.reasoningLevel ?? "off";
-  const showReasoning = props.showThinking && reasoningLevel !== "off";
-  const assistantIdentity = {
-    name: props.assistantName,
-    avatar: props.assistantAvatar ?? props.assistantAvatarUrl ?? null,
-  };
+  const groups = resolveChatGroups(props);
+  const isBusy = props.sending || props.loading;
+  const canAbort = props.canAbort ?? false;
+  const attachments = props.attachments ?? [];
+  const hasAttachments = attachments.length > 0;
 
-  const hasAttachments = (props.attachments?.length ?? 0) > 0;
   const composePlaceholder = props.connected
     ? hasAttachments
-      ? "Add a message or paste more images..."
-      : "Message (↩ to send, Shift+↩ for line breaks, paste images)"
-    : "Connect to the gateway to start chatting…";
-
-  const splitRatio = props.splitRatio ?? 0.6;
-  const sidebarOpen = Boolean(props.sidebarOpen && props.onCloseSidebar);
-  const thread = html`
-    <div
-      class="chat-thread"
-      role="log"
-      aria-live="polite"
-      @scroll=${props.onChatScroll}
-    >
-      ${
-        props.loading
-          ? html`
-              <div class="muted">Loading chat…</div>
-            `
-          : nothing
-      }
-      ${repeat(
-        buildChatItems(props),
-        (item) => item.key,
-        (item) => {
-          if (item.kind === "reading-indicator") {
-            return renderReadingIndicatorGroup(assistantIdentity);
-          }
-
-          if (item.kind === "stream") {
-            return renderStreamingGroup(
-              item.text,
-              item.startedAt,
-              props.onOpenSidebar,
-              assistantIdentity,
-            );
-          }
-
-          if (item.kind === "group") {
-            return renderMessageGroup(item, {
-              onOpenSidebar: props.onOpenSidebar,
-              showReasoning,
-              assistantName: props.assistantName,
-              assistantAvatar: assistantIdentity.avatar,
-            });
-          }
-
-          return nothing;
-        },
-      )}
-    </div>
-  `;
+      ? "添加消息或粘贴更多图片..."
+      : "发送消息 (Enter 发送, Shift+Enter 换行, 支持粘贴图片)"
+    : "连接 Gateway 以开始对话...";
 
   return html`
-    <section class="card chat">
-      ${props.disabledReason ? html`<div class="callout">${props.disabledReason}</div>` : nothing}
-
-      ${props.error ? html`<div class="callout danger">${props.error}</div>` : nothing}
-
-      ${renderCompactionIndicator(props.compactionStatus)}
-
-      ${
-        props.focusMode
-          ? html`
-            <button
-              class="chat-focus-exit"
-              type="button"
-              @click=${props.onToggleFocusMode}
-              aria-label="Exit focus mode"
-              title="Exit focus mode"
-            >
-              ${icons.x}
-            </button>
-          `
-          : nothing
-      }
-
-      <div
-        class="chat-split-container ${sidebarOpen ? "chat-split-container--open" : ""}"
-      >
-        <div
-          class="chat-main"
-          style="flex: ${sidebarOpen ? `0 0 ${splitRatio * 100}%` : "1 1 100%"}"
-        >
-          ${thread}
+    <div class="chat-layout ${props.sidebarOpen ? "chat-layout--split" : ""}">
+      <div class="chat-main">
+        <div class="chat-messages" @scroll=${props.onChatScroll}>
+          ${props.error
+      ? html`<div class="callout danger" style="margin: 16px;">${props.error}</div>`
+      : nothing}
+            
+          ${repeat(
+        groups,
+        (group) => group.key,
+        (group) => renderChatGroup(group, props)
+      )}
+          
+          ${props.loading
+      ? html`<div class="chat-message-loading">
+                <span class="muted">正在加载对话...</span>
+              </div>`
+      : nothing}
+            
+          <div class="chat-spacer"></div>
         </div>
 
-        ${
-          sidebarOpen
-            ? html`
-              <resizable-divider
-                .splitRatio=${splitRatio}
-                @resize=${(e: CustomEvent) => props.onSplitRatioChange?.(e.detail.splitRatio)}
-              ></resizable-divider>
-              <div class="chat-sidebar">
-                ${renderMarkdownSidebar({
-                  content: props.sidebarContent ?? null,
-                  error: props.sidebarError ?? null,
-                  onClose: props.onCloseSidebar!,
-                  onViewRawText: () => {
-                    if (!props.sidebarContent || !props.onOpenSidebar) {
-                      return;
-                    }
-                    props.onOpenSidebar(`\`\`\`\n${props.sidebarContent}\n\`\`\``);
-                  },
-                })}
-              </div>
-            `
-            : nothing
+        <div class="chat-compose">
+          ${renderCompactionIndicator(props.compactionStatus)}
+          
+          ${attachments.length > 0
+      ? html`
+                <div class="chat-attachments">
+                  ${attachments.map(
+        (att) => html`
+                      <div class="chat-attachment">
+                        <img
+                          src=${att.dataUrl}
+                          alt="附件预览"
+                          class="chat-attachment__img"
+                        />
+                        <button
+                          class="chat-attachment__remove"
+                          type="button"
+                          aria-label="移除附件"
+                          @click=${() => {
+            const next = (props.attachments ?? []).filter((a) => a.id !== att.id);
+            props.onAttachmentsChange?.(next);
+          }}
+                        >
+                          ${icons.x}
+                        </button>
+                      </div>
+                    `,
+      )}
+                </div>
+              `
+      : nothing}
+
+          ${props.focusMode
+      ? html`
+                <button
+                  class="chat-focus-exit"
+                  type="button"
+                  @click=${props.onToggleFocusMode}
+                  aria-label="退出专注模式"
+                  title="退出专注模式"
+                >
+                  ${icons.x}
+                </button>
+              `
+      : nothing}
+
+          ${props.queue.length
+      ? html`
+                <div class="chat-queue" role="status" aria-live="polite">
+                  <div class="chat-queue__title">队列中 (${props.queue.length})</div>
+                  <div class="chat-queue__list">
+                    ${props.queue.map(
+        (item) => html`
+                        <div class="chat-queue__item">
+                          <div class="chat-queue__text">
+                            ${item.text ||
+          (item.attachments?.length ? `图片 (${item.attachments.length})` : "")}
+                          </div>
+                          <button
+                            class="btn chat-queue__remove"
+                            type="button"
+                            aria-label="移除队列消息"
+                            @click=${() => props.onQueueRemove(item.id)}
+                          >
+                            ${icons.x}
+                          </button>
+                        </div>
+                      `,
+      )}
+                  </div>
+                </div>
+              `
+      : nothing}
+
+          ${props.showNewMessages
+      ? html`
+                <button
+                  class="chat-new-messages"
+                  type="button"
+                  @click=${props.onScrollToBottom}
+                >
+                  新消息 ${icons.arrowDown}
+                </button>
+              `
+      : nothing}
+
+          <div class="chat-compose__row">
+            <label class="field chat-compose__field">
+              <span class="sr-only">消息</span>
+              <textarea
+                class="chat-compose__input"
+                placeholder=${composePlaceholder}
+                .value=${props.draft}
+                ?disabled=${!props.connected}
+                @input=${(e: Event) => {
+      const target = e.target as HTMLTextAreaElement;
+      adjustTextareaHeight(target);
+      props.onDraftChange(target.value);
+    }}
+                @keydown=${(e: KeyboardEvent) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        if (props.canSend) {
+          props.onSend();
         }
+      }
+    }}
+                ${ref(adjustTextareaHeight)}
+              ></textarea>
+            </label>
+            
+            <div class="chat-compose__actions">
+              <button
+                class="btn"
+                ?disabled=${!props.connected || (!canAbort && props.sending)}
+                @click=${canAbort ? props.onAbort : props.onNewSession}
+              >
+                ${canAbort ? "停止" : "新会话"}
+              </button>
+              <button
+                class="btn primary"
+                ?disabled=${!props.connected || (!props.canSend && !isBusy)}
+                @click=${props.onSend}
+              >
+                ${isBusy ? "排队" : "发送"} <kbd class="btn-kbd">↵</kbd>
+              </button>
+            </div>
+          </div>
+          
+          ${props.disabledReason
+      ? html`<div class="chat-compose-status muted">${props.disabledReason}</div>`
+      : nothing}
+        </div>
       </div>
 
-      ${
-        props.queue.length
-          ? html`
-            <div class="chat-queue" role="status" aria-live="polite">
-              <div class="chat-queue__title">Queued (${props.queue.length})</div>
-              <div class="chat-queue__list">
-                ${props.queue.map(
-                  (item) => html`
-                    <div class="chat-queue__item">
-                      <div class="chat-queue__text">
-                        ${
-                          item.text ||
-                          (item.attachments?.length ? `Image (${item.attachments.length})` : "")
-                        }
-                      </div>
-                      <button
-                        class="btn chat-queue__remove"
-                        type="button"
-                        aria-label="Remove queued message"
-                        @click=${() => props.onQueueRemove(item.id)}
-                      >
-                        ${icons.x}
-                      </button>
-                    </div>
-                  `,
-                )}
-              </div>
+      ${props.sidebarContent
+      ? html`
+            <resizable-divider
+              direction="horizontal"
+              .value=${props.splitRatio ?? 50}
+              @change=${(e: CustomEvent) => props.onSplitRatioChange?.(e.detail.value)}
+            ></resizable-divider>
+            <div class="chat-sidebar" style="width: ${props.splitRatio ?? 50}%">
+              ${renderMarkdownSidebar({
+        content: props.sidebarContent,
+        error: props.sidebarError,
+        onClose: props.onCloseSidebar,
+      })}
             </div>
           `
-          : nothing
-      }
-
-      ${
-        props.showNewMessages
-          ? html`
-            <button
-              class="chat-new-messages"
-              type="button"
-              @click=${props.onScrollToBottom}
-            >
-              New messages ${icons.arrowDown}
-            </button>
-          `
-          : nothing
-      }
-
-      <div class="chat-compose">
-        ${renderAttachmentPreview(props)}
-        <div class="chat-compose__row">
-          <label class="field chat-compose__field">
-            <span>Message</span>
-            <textarea
-              ${ref((el) => el && adjustTextareaHeight(el as HTMLTextAreaElement))}
-              .value=${props.draft}
-              ?disabled=${!props.connected}
-              @keydown=${(e: KeyboardEvent) => {
-                if (e.key !== "Enter") {
-                  return;
-                }
-                if (e.isComposing || e.keyCode === 229) {
-                  return;
-                }
-                if (e.shiftKey) {
-                  return;
-                } // Allow Shift+Enter for line breaks
-                if (!props.connected) {
-                  return;
-                }
-                e.preventDefault();
-                if (canCompose) {
-                  props.onSend();
-                }
-              }}
-              @input=${(e: Event) => {
-                const target = e.target as HTMLTextAreaElement;
-                adjustTextareaHeight(target);
-                props.onDraftChange(target.value);
-              }}
-              @paste=${(e: ClipboardEvent) => handlePaste(e, props)}
-              placeholder=${composePlaceholder}
-            ></textarea>
-          </label>
-          <div class="chat-compose__actions">
-            <button
-              class="btn"
-              ?disabled=${!props.connected || (!canAbort && props.sending)}
-              @click=${canAbort ? props.onAbort : props.onNewSession}
-            >
-              ${canAbort ? "Stop" : "New session"}
-            </button>
-            <button
-              class="btn primary"
-              ?disabled=${!props.connected}
-              @click=${props.onSend}
-            >
-              ${isBusy ? "Queue" : "Send"}<kbd class="btn-kbd">↵</kbd>
-            </button>
-          </div>
-        </div>
-      </div>
-    </section>
+      : nothing}
+    </div>
   `;
 }
 
-const CHAT_HISTORY_RENDER_LIMIT = 200;
-
-function groupMessages(items: ChatItem[]): Array<ChatItem | MessageGroup> {
-  const result: Array<ChatItem | MessageGroup> = [];
-  let currentGroup: MessageGroup | null = null;
-
-  for (const item of items) {
-    if (item.kind !== "message") {
-      if (currentGroup) {
-        result.push(currentGroup);
-        currentGroup = null;
-      }
-      result.push(item);
-      continue;
-    }
-
-    const normalized = normalizeMessage(item.message);
-    const role = normalizeRoleForGrouping(normalized.role);
-    const timestamp = normalized.timestamp || Date.now();
-
-    if (!currentGroup || currentGroup.role !== role) {
-      if (currentGroup) {
-        result.push(currentGroup);
-      }
-      currentGroup = {
-        kind: "group",
-        key: `group:${role}:${item.key}`,
-        role,
-        messages: [{ message: item.message, key: item.key }],
-        timestamp,
-        isStreaming: false,
-      };
-    } else {
-      currentGroup.messages.push({ message: item.message, key: item.key });
-    }
+function renderChatGroup(group: MessageGroup, props: ChatProps) {
+  const g = group as any;
+  if (g.kind === "message-group") {
+    return renderMessageGroup(group, {
+      assistantAvatar: props.assistantAvatar,
+      assistantName: props.assistantName,
+      onOpenSidebar: props.onOpenSidebar,
+      showReasoning: true
+    });
   }
-
-  if (currentGroup) {
-    result.push(currentGroup);
+  if (g.kind === "reading-indicator") {
+    return renderReadingIndicatorGroup(undefined);
   }
-  return result;
+  if (g.kind === "stream") {
+    return renderStreamingGroup(g.text || "", g.timestamp || Date.now(), undefined, {
+      name: props.assistantName,
+      avatar: props.assistantAvatar || undefined
+    });
+  }
+  return nothing;
 }
 
-function buildChatItems(props: ChatProps): Array<ChatItem | MessageGroup> {
+function resolveChatGroups(props: ChatProps): MessageGroup[] {
+  const history = props.messages as Record<string, unknown>[];
+  const tools = props.toolMessages as Record<string, unknown>[];
   const items: ChatItem[] = [];
-  const history = Array.isArray(props.messages) ? props.messages : [];
-  const tools = Array.isArray(props.toolMessages) ? props.toolMessages : [];
+
   const historyStart = Math.max(0, history.length - CHAT_HISTORY_RENDER_LIMIT);
+
   if (historyStart > 0) {
     items.push({
       kind: "message",
       key: "chat:history:notice",
       message: {
         role: "system",
-        content: `Showing last ${CHAT_HISTORY_RENDER_LIMIT} messages (${historyStart} hidden).`,
+        content: `显示最近 ${CHAT_HISTORY_RENDER_LIMIT} 条消息 (隐藏了 ${historyStart} 条)。`,
         timestamp: Date.now(),
       },
     });
@@ -513,6 +377,65 @@ function buildChatItems(props: ChatProps): Array<ChatItem | MessageGroup> {
   }
 
   return groupMessages(items);
+}
+
+function groupMessages(items: ChatItem[]): MessageGroup[] {
+  const groups: MessageGroup[] = [];
+  let currentGroup: MessageGroup | null = null;
+
+  for (const item of items) {
+    if (item.kind === "stream") {
+      currentGroup = null;
+      // Force cast to suit render expectations
+      groups.push({
+        kind: "stream" as any,
+        key: item.key,
+        role: "assistant",
+        messages: [],
+        timestamp: item.startedAt,
+        isStreaming: true,
+        text: item.text
+      } as any);
+      continue;
+    }
+
+    if (item.kind === "reading-indicator") {
+      currentGroup = null;
+      groups.push({
+        kind: "reading-indicator" as any,
+        key: item.key,
+        role: "assistant",
+        messages: [],
+        timestamp: Date.now(),
+        isStreaming: false
+      } as any);
+      continue;
+    }
+
+    if (item.kind === "message") {
+      const msg = item.message as Record<string, unknown>;
+      const role = typeof msg.role === 'string' ? msg.role : 'unknown';
+      const normalizedRole = normalizeRoleForGrouping(role);
+
+      if (currentGroup &&
+        (currentGroup as any).kind === "message-group" &&
+        normalizeRoleForGrouping(currentGroup.role) === normalizedRole) {
+        currentGroup.messages.push({ message: msg, key: item.key });
+      } else {
+        const timestamp = typeof msg.timestamp === 'number' ? msg.timestamp : Date.now();
+        currentGroup = {
+          kind: "message-group" as any,
+          key: `group:${item.key}`,
+          role,
+          messages: [{ message: msg, key: item.key }],
+          timestamp,
+          isStreaming: false
+        } as unknown as MessageGroup;
+        groups.push(currentGroup);
+      }
+    }
+  }
+  return groups;
 }
 
 function messageKey(message: unknown, index: number): string {

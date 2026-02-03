@@ -53,14 +53,14 @@ export function buildCronSchedule(form: CronFormState) {
   if (form.scheduleKind === "at") {
     const ms = Date.parse(form.scheduleAt);
     if (!Number.isFinite(ms)) {
-      throw new Error("Invalid run time.");
+      throw new Error("运行时间无效。");
     }
     return { kind: "at" as const, atMs: ms };
   }
   if (form.scheduleKind === "every") {
     const amount = toNumber(form.everyAmount, 0);
     if (amount <= 0) {
-      throw new Error("Invalid interval amount.");
+      throw new Error("间隔数值无效。");
     }
     const unit = form.everyUnit;
     const mult = unit === "minutes" ? 60_000 : unit === "hours" ? 3_600_000 : 86_400_000;
@@ -68,7 +68,7 @@ export function buildCronSchedule(form: CronFormState) {
   }
   const expr = form.cronExpr.trim();
   if (!expr) {
-    throw new Error("Cron expression required.");
+    throw new Error("必须提供 Cron 表达式。");
   }
   return { kind: "cron" as const, expr, tz: form.cronTz.trim() || undefined };
 }
@@ -77,13 +77,13 @@ export function buildCronPayload(form: CronFormState) {
   if (form.payloadKind === "systemEvent") {
     const text = form.payloadText.trim();
     if (!text) {
-      throw new Error("System event text required.");
+      throw new Error("必须提供系统事件文本。");
     }
     return { kind: "systemEvent" as const, text };
   }
   const message = form.payloadText.trim();
   if (!message) {
-    throw new Error("Agent message required.");
+    throw new Error("必须提供代理消息。");
   }
   const payload: {
     kind: "agentTurn";
@@ -134,7 +134,7 @@ export async function addCronJob(state: CronState) {
           : undefined,
     };
     if (!job.name) {
-      throw new Error("Name required.");
+      throw new Error("必须提供名称。");
     }
     await state.client.request("cron.add", job);
     state.cronForm = {

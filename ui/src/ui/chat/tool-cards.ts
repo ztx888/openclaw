@@ -56,15 +56,14 @@ export function renderToolCardSidebar(card: ToolCard, onOpenSidebar?: (content: 
   const canClick = Boolean(onOpenSidebar);
   const handleClick = canClick
     ? () => {
-        if (hasText) {
-          onOpenSidebar!(formatToolOutputForSidebar(card.text!));
-          return;
-        }
-        const info = `## ${display.label}\n\n${
-          detail ? `**Command:** \`${detail}\`\n\n` : ""
-        }*No output — tool completed successfully.*`;
-        onOpenSidebar!(info);
+      if (hasText) {
+        onOpenSidebar!(formatToolOutputForSidebar(card.text!));
+        return;
       }
+      const info = `## ${display.label}\n\n${detail ? `**命令:** \`${detail}\`\n\n` : ""
+        }*无输出 — 工具已成功完成。*`;
+      onOpenSidebar!(info);
+    }
     : undefined;
 
   const isShort = hasText && (card.text?.length ?? 0) <= TOOL_INLINE_THRESHOLD;
@@ -78,43 +77,39 @@ export function renderToolCardSidebar(card: ToolCard, onOpenSidebar?: (content: 
       @click=${handleClick}
       role=${canClick ? "button" : nothing}
       tabindex=${canClick ? "0" : nothing}
-      @keydown=${
-        canClick
-          ? (e: KeyboardEvent) => {
-              if (e.key !== "Enter" && e.key !== " ") {
-                return;
-              }
-              e.preventDefault();
-              handleClick?.();
-            }
-          : nothing
+      @keydown=${canClick
+      ? (e: KeyboardEvent) => {
+        if (e.key !== "Enter" && e.key !== " ") {
+          return;
+        }
+        e.preventDefault();
+        handleClick?.();
       }
+      : nothing
+    }
     >
       <div class="chat-tool-card__header">
         <div class="chat-tool-card__title">
           <span class="chat-tool-card__icon">${icons[display.icon]}</span>
           <span>${display.label}</span>
         </div>
-        ${
-          canClick
-            ? html`<span class="chat-tool-card__action">${hasText ? "View" : ""} ${icons.check}</span>`
-            : nothing
-        }
+        ${canClick
+      ? html`<span class="chat-tool-card__action">${hasText ? "查看" : ""} ${icons.check}</span>`
+      : nothing
+    }
         ${isEmpty && !canClick ? html`<span class="chat-tool-card__status">${icons.check}</span>` : nothing}
       </div>
       ${detail ? html`<div class="chat-tool-card__detail">${detail}</div>` : nothing}
-      ${
-        isEmpty
-          ? html`
-              <div class="chat-tool-card__status-text muted">Completed</div>
+      ${isEmpty
+      ? html`
+              <div class="chat-tool-card__status-text muted">已完成</div>
             `
-          : nothing
-      }
-      ${
-        showCollapsed
-          ? html`<div class="chat-tool-card__preview mono">${getTruncatedPreview(card.text!)}</div>`
-          : nothing
-      }
+      : nothing
+    }
+      ${showCollapsed
+      ? html`<div class="chat-tool-card__preview mono">${getTruncatedPreview(card.text!)}</div>`
+      : nothing
+    }
       ${showInline ? html`<div class="chat-tool-card__inline mono">${card.text}</div>` : nothing}
     </div>
   `;

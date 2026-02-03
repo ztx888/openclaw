@@ -53,37 +53,36 @@ export function renderChannels(props: ChannelsProps) {
   return html`
     <section class="grid grid-cols-2">
       ${orderedChannels.map((channel) =>
-        renderChannel(channel.key, props, {
-          whatsapp,
-          telegram,
-          discord,
-          googlechat,
-          slack,
-          signal,
-          imessage,
-          nostr,
-          channelAccounts: props.snapshot?.channelAccounts ?? null,
-        }),
-      )}
+    renderChannel(channel.key, props, {
+      whatsapp,
+      telegram,
+      discord,
+      googlechat,
+      slack,
+      signal,
+      imessage,
+      nostr,
+      channelAccounts: props.snapshot?.channelAccounts ?? null,
+    }),
+  )}
     </section>
 
     <section class="card" style="margin-top: 18px;">
       <div class="row" style="justify-content: space-between;">
         <div>
-          <div class="card-title">Channel health</div>
-          <div class="card-sub">Channel status snapshots from the gateway.</div>
+          <div class="card-title">渠道健康状况</div>
+          <div class="card-sub">来自网关的渠道状态快照。</div>
         </div>
-        <div class="muted">${props.lastSuccessAt ? formatAgo(props.lastSuccessAt) : "n/a"}</div>
+        <div class="muted">${props.lastSuccessAt ? formatAgo(props.lastSuccessAt) : "未知"}</div>
       </div>
-      ${
-        props.lastError
-          ? html`<div class="callout danger" style="margin-top: 12px;">
+      ${props.lastError
+      ? html`<div class="callout danger" style="margin-top: 12px;">
             ${props.lastError}
           </div>`
-          : nothing
-      }
+      : nothing
+    }
       <pre class="code-block" style="margin-top: 12px;">
-${props.snapshot ? JSON.stringify(props.snapshot, null, 2) : "No snapshot yet."}
+${props.snapshot ? JSON.stringify(props.snapshot, null, 2) : "暂无快照。"}
       </pre>
     </section>
   `;
@@ -155,12 +154,12 @@ function renderChannel(key: ChannelKey, props: ChannelsProps, data: ChannelsChan
         props.nostrProfileAccountId === accountId ? props.nostrProfileFormState : null;
       const profileFormCallbacks = showForm
         ? {
-            onFieldChange: props.onNostrProfileFieldChange,
-            onSave: props.onNostrProfileSave,
-            onImport: props.onNostrProfileImport,
-            onCancel: props.onNostrProfileCancel,
-            onToggleAdvanced: props.onNostrProfileToggleAdvanced,
-          }
+          onFieldChange: props.onNostrProfileFieldChange,
+          onSave: props.onNostrProfileSave,
+          onImport: props.onNostrProfileImport,
+          onCancel: props.onNostrProfileCancel,
+          onToggleAdvanced: props.onNostrProfileToggleAdvanced,
+        }
         : null;
       return renderNostrCard({
         props,
@@ -194,41 +193,39 @@ function renderGenericChannelCard(
   return html`
     <div class="card">
       <div class="card-title">${label}</div>
-      <div class="card-sub">Channel status and configuration.</div>
+      <div class="card-sub">渠道状态与配置。</div>
       ${accountCountLabel}
 
-      ${
-        accounts.length > 0
-          ? html`
+      ${accounts.length > 0
+      ? html`
             <div class="account-card-list">
               ${accounts.map((account) => renderGenericAccount(account))}
             </div>
           `
-          : html`
+      : html`
             <div class="status-list" style="margin-top: 16px;">
               <div>
-                <span class="label">Configured</span>
-                <span>${configured == null ? "n/a" : configured ? "Yes" : "No"}</span>
+                <span class="label">已配置</span>
+                <span>${configured == null ? "未知" : configured ? "是" : "否"}</span>
               </div>
               <div>
-                <span class="label">Running</span>
-                <span>${running == null ? "n/a" : running ? "Yes" : "No"}</span>
+                <span class="label">运行中</span>
+                <span>${running == null ? "未知" : running ? "是" : "否"}</span>
               </div>
               <div>
-                <span class="label">Connected</span>
-                <span>${connected == null ? "n/a" : connected ? "Yes" : "No"}</span>
+                <span class="label">已连接</span>
+                <span>${connected == null ? "未知" : connected ? "是" : "否"}</span>
               </div>
             </div>
           `
-      }
+    }
 
-      ${
-        lastError
-          ? html`<div class="callout danger" style="margin-top: 12px;">
+      ${lastError
+      ? html`<div class="callout danger" style="margin-top: 12px;">
             ${lastError}
           </div>`
-          : nothing
-      }
+      : nothing
+    }
 
       ${renderChannelConfigSection({ channelId: key, props })}
     </div>
@@ -258,29 +255,29 @@ function hasRecentActivity(account: ChannelAccountSnapshot): boolean {
   return Date.now() - account.lastInboundAt < RECENT_ACTIVITY_THRESHOLD_MS;
 }
 
-function deriveRunningStatus(account: ChannelAccountSnapshot): "Yes" | "No" | "Active" {
+function deriveRunningStatus(account: ChannelAccountSnapshot): "是" | "否" | "活跃" {
   if (account.running) {
-    return "Yes";
+    return "是";
   }
   // If we have recent inbound activity, the channel is effectively running
   if (hasRecentActivity(account)) {
-    return "Active";
+    return "活跃";
   }
-  return "No";
+  return "否";
 }
 
-function deriveConnectedStatus(account: ChannelAccountSnapshot): "Yes" | "No" | "Active" | "n/a" {
+function deriveConnectedStatus(account: ChannelAccountSnapshot): "是" | "否" | "活跃" | "未知" {
   if (account.connected === true) {
-    return "Yes";
+    return "是";
   }
   if (account.connected === false) {
-    return "No";
+    return "否";
   }
   // If connected is null/undefined but we have recent activity, show as active
   if (hasRecentActivity(account)) {
-    return "Active";
+    return "活跃";
   }
-  return "n/a";
+  return "未知";
 }
 
 function renderGenericAccount(account: ChannelAccountSnapshot) {
@@ -295,30 +292,29 @@ function renderGenericAccount(account: ChannelAccountSnapshot) {
       </div>
       <div class="status-list account-card-status">
         <div>
-          <span class="label">Running</span>
+          <span class="label">运行中</span>
           <span>${runningStatus}</span>
         </div>
         <div>
-          <span class="label">Configured</span>
-          <span>${account.configured ? "Yes" : "No"}</span>
+          <span class="label">已配置</span>
+          <span>${account.configured ? "是" : "否"}</span>
         </div>
         <div>
-          <span class="label">Connected</span>
+          <span class="label">已连接</span>
           <span>${connectedStatus}</span>
         </div>
         <div>
-          <span class="label">Last inbound</span>
-          <span>${account.lastInboundAt ? formatAgo(account.lastInboundAt) : "n/a"}</span>
+          <span class="label">最近活跃</span>
+          <span>${account.lastInboundAt ? formatAgo(account.lastInboundAt) : "未知"}</span>
         </div>
-        ${
-          account.lastError
-            ? html`
+        ${account.lastError
+      ? html`
               <div class="account-card-error">
                 ${account.lastError}
               </div>
             `
-            : nothing
-        }
+      : nothing
+    }
       </div>
     </div>
   `;

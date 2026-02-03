@@ -26,8 +26,8 @@ export function renderOverview(props: OverviewProps) {
   const snapshot = props.hello?.snapshot as
     | { uptimeMs?: number; policy?: { tickIntervalMs?: number } }
     | undefined;
-  const uptime = snapshot?.uptimeMs ? formatDurationMs(snapshot.uptimeMs) : "n/a";
-  const tick = snapshot?.policy?.tickIntervalMs ? `${snapshot.policy.tickIntervalMs}ms` : "n/a";
+  const uptime = snapshot?.uptimeMs ? formatDurationMs(snapshot.uptimeMs) : "无";
+  const tick = snapshot?.policy?.tickIntervalMs ? `${snapshot.policy.tickIntervalMs}ms` : "无";
   const authHint = (() => {
     if (props.connected || !props.lastError) {
       return null;
@@ -42,10 +42,10 @@ export function renderOverview(props: OverviewProps) {
     if (!hasToken && !hasPassword) {
       return html`
         <div class="muted" style="margin-top: 8px">
-          This gateway requires auth. Add a token or password, then click Connect.
+          此 Gateway 需要认证。添加令牌(Token)或密码，然后点击连接。
           <div style="margin-top: 6px">
-            <span class="mono">openclaw dashboard --no-open</span> → tokenized URL<br />
-            <span class="mono">openclaw doctor --generate-gateway-token</span> → set token
+            <span class="mono">openclaw dashboard --no-open</span> → 获取带 Token 的 URL<br />
+            <span class="mono">openclaw doctor --generate-gateway-token</span> → 设置 Token
           </div>
           <div style="margin-top: 6px">
             <a
@@ -53,8 +53,8 @@ export function renderOverview(props: OverviewProps) {
               href="https://docs.openclaw.ai/web/dashboard"
               target="_blank"
               rel="noreferrer"
-              title="Control UI auth docs (opens in new tab)"
-              >Docs: Control UI auth</a
+              title="控制台认证文档 (在新标签页打开)"
+              >文档: 控制台认证</a
             >
           </div>
         </div>
@@ -62,16 +62,16 @@ export function renderOverview(props: OverviewProps) {
     }
     return html`
       <div class="muted" style="margin-top: 8px">
-        Auth failed. Re-copy a tokenized URL with
-        <span class="mono">openclaw dashboard --no-open</span>, or update the token, then click Connect.
+        认证失败。请使用 <span class="mono">openclaw dashboard --no-open</span> 重新复制带 Token 的 URL，
+        或更新令牌，然后点击连接。
         <div style="margin-top: 6px">
           <a
             class="session-link"
             href="https://docs.openclaw.ai/web/dashboard"
             target="_blank"
             rel="noreferrer"
-            title="Control UI auth docs (opens in new tab)"
-            >Docs: Control UI auth</a
+            title="控制台认证文档 (在新标签页打开)"
+            >文档: 控制台认证</a
           >
         </div>
       </div>
@@ -91,11 +91,11 @@ export function renderOverview(props: OverviewProps) {
     }
     return html`
       <div class="muted" style="margin-top: 8px">
-        This page is HTTP, so the browser blocks device identity. Use HTTPS (Tailscale Serve) or open
-        <span class="mono">http://127.0.0.1:18789</span> on the gateway host.
+        当前页面为 HTTP 协议，浏览器阻止了设备身份验证。请使用 HTTPS (Tailscale Serve) 或在 Gateway 主机上打开
+        <span class="mono">http://127.0.0.1:18789</span>。
         <div style="margin-top: 6px">
-          If you must stay on HTTP, set
-          <span class="mono">gateway.controlUi.allowInsecureAuth: true</span> (token-only).
+          如果你必须停留在 HTTP，请设置
+          <span class="mono">gateway.controlUi.allowInsecureAuth: true</span> (仅限 Token)。
         </div>
         <div style="margin-top: 6px">
           <a
@@ -103,8 +103,8 @@ export function renderOverview(props: OverviewProps) {
             href="https://docs.openclaw.ai/gateway/tailscale"
             target="_blank"
             rel="noreferrer"
-            title="Tailscale Serve docs (opens in new tab)"
-            >Docs: Tailscale Serve</a
+            title="Tailscale Serve 文档 (在新标签页打开)"
+            >文档: Tailscale Serve</a
           >
           <span class="muted"> · </span>
           <a
@@ -112,8 +112,8 @@ export function renderOverview(props: OverviewProps) {
             href="https://docs.openclaw.ai/web/control-ui#insecure-http"
             target="_blank"
             rel="noreferrer"
-            title="Insecure HTTP docs (opens in new tab)"
-            >Docs: Insecure HTTP</a
+            title="不安全 HTTP 文档 (在新标签页打开)"
+            >文档: 不安全 HTTP</a
           >
         </div>
       </div>
@@ -123,17 +123,17 @@ export function renderOverview(props: OverviewProps) {
   return html`
     <section class="grid grid-cols-2">
       <div class="card">
-        <div class="card-title">Gateway Access</div>
-        <div class="card-sub">Where the dashboard connects and how it authenticates.</div>
+        <div class="card-title">Gateway 访问</div>
+        <div class="card-sub">仪表盘的连接地址及认证方式。</div>
         <div class="form-grid" style="margin-top: 16px;">
           <label class="field">
             <span>WebSocket URL</span>
             <input
               .value=${props.settings.gatewayUrl}
               @input=${(e: Event) => {
-                const v = (e.target as HTMLInputElement).value;
-                props.onSettingsChange({ ...props.settings, gatewayUrl: v });
-              }}
+      const v = (e.target as HTMLInputElement).value;
+      props.onSettingsChange({ ...props.settings, gatewayUrl: v });
+    }}
               placeholder="ws://100.x.y.z:18789"
             />
           </label>
@@ -142,120 +142,119 @@ export function renderOverview(props: OverviewProps) {
             <input
               .value=${props.settings.token}
               @input=${(e: Event) => {
-                const v = (e.target as HTMLInputElement).value;
-                props.onSettingsChange({ ...props.settings, token: v });
-              }}
+      const v = (e.target as HTMLInputElement).value;
+      props.onSettingsChange({ ...props.settings, token: v });
+    }}
               placeholder="OPENCLAW_GATEWAY_TOKEN"
             />
           </label>
           <label class="field">
-            <span>Password (not stored)</span>
+            <span>密码 (不存储)</span>
             <input
               type="password"
               .value=${props.password}
               @input=${(e: Event) => {
-                const v = (e.target as HTMLInputElement).value;
-                props.onPasswordChange(v);
-              }}
-              placeholder="system or shared password"
+      const v = (e.target as HTMLInputElement).value;
+      props.onPasswordChange(v);
+    }}
+              placeholder="系统或共享密码"
             />
           </label>
           <label class="field">
-            <span>Default Session Key</span>
+            <span>默认会话密钥 (Session Key)</span>
             <input
               .value=${props.settings.sessionKey}
               @input=${(e: Event) => {
-                const v = (e.target as HTMLInputElement).value;
-                props.onSessionKeyChange(v);
-              }}
+      const v = (e.target as HTMLInputElement).value;
+      props.onSessionKeyChange(v);
+    }}
             />
           </label>
         </div>
         <div class="row" style="margin-top: 14px;">
-          <button class="btn" @click=${() => props.onConnect()}>Connect</button>
-          <button class="btn" @click=${() => props.onRefresh()}>Refresh</button>
-          <span class="muted">Click Connect to apply connection changes.</span>
+          <button class="btn" @click=${() => props.onConnect()}>连接</button>
+          <button class="btn" @click=${() => props.onRefresh()}>刷新</button>
+          <span class="muted">点击连接以应用更改。</span>
         </div>
       </div>
 
       <div class="card">
-        <div class="card-title">Snapshot</div>
-        <div class="card-sub">Latest gateway handshake information.</div>
+        <div class="card-title">快照</div>
+        <div class="card-sub">最新的 Gateway 握手信息。</div>
         <div class="stat-grid" style="margin-top: 16px;">
           <div class="stat">
-            <div class="stat-label">Status</div>
+            <div class="stat-label">状态</div>
             <div class="stat-value ${props.connected ? "ok" : "warn"}">
-              ${props.connected ? "Connected" : "Disconnected"}
+              ${props.connected ? "已连接" : "已断开"}
             </div>
           </div>
           <div class="stat">
-            <div class="stat-label">Uptime</div>
+            <div class="stat-label">运行时间</div>
             <div class="stat-value">${uptime}</div>
           </div>
           <div class="stat">
-            <div class="stat-label">Tick Interval</div>
+            <div class="stat-label">心跳间隔</div>
             <div class="stat-value">${tick}</div>
           </div>
           <div class="stat">
-            <div class="stat-label">Last Channels Refresh</div>
+            <div class="stat-label">上次渠道刷新</div>
             <div class="stat-value">
-              ${props.lastChannelsRefresh ? formatAgo(props.lastChannelsRefresh) : "n/a"}
+              ${props.lastChannelsRefresh ? formatAgo(props.lastChannelsRefresh) : "无"}
             </div>
           </div>
         </div>
-        ${
-          props.lastError
-            ? html`<div class="callout danger" style="margin-top: 14px;">
+        ${props.lastError
+      ? html`<div class="callout danger" style="margin-top: 14px;">
               <div>${props.lastError}</div>
               ${authHint ?? ""}
               ${insecureContextHint ?? ""}
             </div>`
-            : html`
+      : html`
                 <div class="callout" style="margin-top: 14px">
-                  Use Channels to link WhatsApp, Telegram, Discord, Signal, or iMessage.
+                  使用“渠道”页面链接 WhatsApp, Telegram, Discord, Signal 或 iMessage。
                 </div>
               `
-        }
+    }
       </div>
     </section>
 
     <section class="grid grid-cols-3" style="margin-top: 18px;">
       <div class="card stat-card">
-        <div class="stat-label">Instances</div>
+        <div class="stat-label">实例</div>
         <div class="stat-value">${props.presenceCount}</div>
-        <div class="muted">Presence beacons in the last 5 minutes.</div>
+        <div class="muted">过去 5 分钟内的在线信标。</div>
       </div>
       <div class="card stat-card">
-        <div class="stat-label">Sessions</div>
-        <div class="stat-value">${props.sessionsCount ?? "n/a"}</div>
-        <div class="muted">Recent session keys tracked by the gateway.</div>
+        <div class="stat-label">会话</div>
+        <div class="stat-value">${props.sessionsCount ?? "无"}</div>
+        <div class="muted">Gateway 追踪的近期会话密钥。</div>
       </div>
       <div class="card stat-card">
-        <div class="stat-label">Cron</div>
+        <div class="stat-label">定时任务</div>
         <div class="stat-value">
-          ${props.cronEnabled == null ? "n/a" : props.cronEnabled ? "Enabled" : "Disabled"}
+          ${props.cronEnabled == null ? "无" : props.cronEnabled ? "已启用" : "已禁用"}
         </div>
-        <div class="muted">Next wake ${formatNextRun(props.cronNext)}</div>
+        <div class="muted">下次唤醒 ${formatNextRun(props.cronNext)}</div>
       </div>
     </section>
 
     <section class="card" style="margin-top: 18px;">
-      <div class="card-title">Notes</div>
-      <div class="card-sub">Quick reminders for remote control setups.</div>
+      <div class="card-title">注意</div>
+      <div class="card-sub">远程控制设置的快速提醒。</div>
       <div class="note-grid" style="margin-top: 14px;">
         <div>
-          <div class="note-title">Tailscale serve</div>
+          <div class="note-title">Tailscale Serve</div>
           <div class="muted">
-            Prefer serve mode to keep the gateway on loopback with tailnet auth.
+            推荐使用 Serve 模式，保持 Gateway 在 loopback 并使用 tailnet 认证。
           </div>
         </div>
         <div>
-          <div class="note-title">Session hygiene</div>
-          <div class="muted">Use /new or sessions.patch to reset context.</div>
+          <div class="note-title">会话管理</div>
+          <div class="muted">使用 /new 或 sessions.patch 重置上下文。</div>
         </div>
         <div>
-          <div class="note-title">Cron reminders</div>
-          <div class="muted">Use isolated sessions for recurring runs.</div>
+          <div class="note-title">Cron 提醒</div>
+          <div class="muted">为循环运行的任务使用隔离的会话。</div>
         </div>
       </div>
     </section>

@@ -2,7 +2,7 @@ import type { CronJob, GatewaySessionRow, PresenceEntry } from "./types";
 import { formatAgo, formatDurationMs, formatMs } from "./format";
 
 export function formatPresenceSummary(entry: PresenceEntry): string {
-  const host = entry.host ?? "unknown";
+  const host = entry.host ?? "未知";
   const ip = entry.ip ? `(${entry.ip})` : "";
   const mode = entry.mode ?? "";
   const version = entry.version ?? "";
@@ -11,19 +11,19 @@ export function formatPresenceSummary(entry: PresenceEntry): string {
 
 export function formatPresenceAge(entry: PresenceEntry): string {
   const ts = entry.ts ?? null;
-  return ts ? formatAgo(ts) : "n/a";
+  return ts ? formatAgo(ts) : "无";
 }
 
 export function formatNextRun(ms?: number | null) {
   if (!ms) {
-    return "n/a";
+    return "无";
   }
   return `${formatMs(ms)} (${formatAgo(ms)})`;
 }
 
 export function formatSessionTokens(row: GatewaySessionRow) {
   if (row.totalTokens == null) {
-    return "n/a";
+    return "无";
   }
   const total = row.totalTokens ?? 0;
   const ctx = row.contextTokens ?? 0;
@@ -44,19 +44,19 @@ export function formatEventPayload(payload: unknown): string {
 
 export function formatCronState(job: CronJob) {
   const state = job.state ?? {};
-  const next = state.nextRunAtMs ? formatMs(state.nextRunAtMs) : "n/a";
-  const last = state.lastRunAtMs ? formatMs(state.lastRunAtMs) : "n/a";
-  const status = state.lastStatus ?? "n/a";
-  return `${status} · next ${next} · last ${last}`;
+  const next = state.nextRunAtMs ? formatMs(state.nextRunAtMs) : "无";
+  const last = state.lastRunAtMs ? formatMs(state.lastRunAtMs) : "无";
+  const status = state.lastStatus ?? "无";
+  return `${status} · 下次 ${next} · 上次 ${last}`;
 }
 
 export function formatCronSchedule(job: CronJob) {
   const s = job.schedule;
   if (s.kind === "at") {
-    return `At ${formatMs(s.atMs)}`;
+    return `于 ${formatMs(s.atMs)} 执行`;
   }
   if (s.kind === "every") {
-    return `Every ${formatDurationMs(s.everyMs)}`;
+    return `每隔 ${formatDurationMs(s.everyMs)}`;
   }
   return `Cron ${s.expr}${s.tz ? ` (${s.tz})` : ""}`;
 }
@@ -64,7 +64,7 @@ export function formatCronSchedule(job: CronJob) {
 export function formatCronPayload(job: CronJob) {
   const p = job.payload;
   if (p.kind === "systemEvent") {
-    return `System: ${p.text}`;
+    return `系统事件: ${p.text}`;
   }
-  return `Agent: ${p.message}`;
+  return `代理: ${p.message}`;
 }

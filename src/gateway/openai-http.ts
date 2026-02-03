@@ -211,7 +211,7 @@ export async function handleOpenAiHttpRequest(
   if (!prompt.message) {
     sendJson(res, 400, {
       error: {
-        message: "Missing user message in `messages`.",
+        message: "`messages` 中缺少用户消息。",
         type: "invalid_request_error",
       },
     });
@@ -241,10 +241,10 @@ export async function handleOpenAiHttpRequest(
       const content =
         Array.isArray(payloads) && payloads.length > 0
           ? payloads
-              .map((p) => (typeof p.text === "string" ? p.text : ""))
-              .filter(Boolean)
-              .join("\n\n")
-          : "No response from OpenClaw.";
+            .map((p) => (typeof p.text === "string" ? p.text : ""))
+            .filter(Boolean)
+            .join("\n\n")
+          : "OpenClaw 未返回响应。";
 
       sendJson(res, 200, {
         id: runId,
@@ -370,10 +370,10 @@ export async function handleOpenAiHttpRequest(
         const content =
           Array.isArray(payloads) && payloads.length > 0
             ? payloads
-                .map((p) => (typeof p.text === "string" ? p.text : ""))
-                .filter(Boolean)
-                .join("\n\n")
-            : "No response from OpenClaw.";
+              .map((p) => (typeof p.text === "string" ? p.text : ""))
+              .filter(Boolean)
+              .join("\n\n")
+            : "OpenClaw 未返回响应。";
 
         sawAssistantDelta = true;
         writeSse(res, {

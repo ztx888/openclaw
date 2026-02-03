@@ -99,7 +99,7 @@ export async function deleteSession(state: SessionsState, key: string) {
     return;
   }
   const confirmed = window.confirm(
-    `Delete session "${key}"?\n\nDeletes the session entry and archives its transcript.`,
+    `删除会话 "${key}"?\n\n删除会话条目并归档其记录。`,
   );
   if (!confirmed) {
     return;

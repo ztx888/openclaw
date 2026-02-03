@@ -116,7 +116,7 @@ export function renderNode(params: {
   if (unsupported.has(key)) {
     return html`<div class="cfg-field cfg-field--error">
       <div class="cfg-field__label">${label}</div>
-      <div class="cfg-field__error">Unsupported schema node. Use Raw mode.</div>
+      <div class="cfg-field__error">不支持的架构节点。请使用源码模式。</div>
     </div>`;
   }
 
@@ -153,23 +153,23 @@ export function renderNode(params: {
           ${help ? html`<div class="cfg-field__help">${help}</div>` : nothing}
           <div class="cfg-segmented">
             ${literals.map(
-              (lit) => html`
+        (lit) => html`
               <button
                 type="button"
                 class="cfg-segmented__btn ${
-                  // oxlint-disable typescript/no-base-to-string
-                  lit === resolvedValue || String(lit) === String(resolvedValue) ? "active" : ""
-                }"
+          // oxlint-disable typescript/no-base-to-string
+          lit === resolvedValue || String(lit) === String(resolvedValue) ? "active" : ""
+          }"
                 ?disabled=${disabled}
                 @click=${() => onPatch(path, lit)}
               >
                 ${
-                  // oxlint-disable typescript/no-base-to-string
-                  String(lit)
-                }
+          // oxlint-disable typescript/no-base-to-string
+          String(lit)
+          }
               </button>
             `,
-            )}
+      )}
           </div>
         </div>
       `;
@@ -218,7 +218,7 @@ export function renderNode(params: {
           ${help ? html`<div class="cfg-field__help">${help}</div>` : nothing}
           <div class="cfg-segmented">
             ${options.map(
-              (opt) => html`
+        (opt) => html`
               <button
                 type="button"
                 class="cfg-segmented__btn ${opt === resolvedValue || String(opt) === String(resolvedValue) ? "active" : ""}"
@@ -228,7 +228,7 @@ export function renderNode(params: {
                 ${String(opt)}
               </button>
             `,
-            )}
+      )}
           </div>
         </div>
       `;
@@ -287,7 +287,7 @@ export function renderNode(params: {
   return html`
     <div class="cfg-field cfg-field--error">
       <div class="cfg-field__label">${label}</div>
-      <div class="cfg-field__error">Unsupported type: ${type}. Use Raw mode.</div>
+      <div class="cfg-field__error">不支持的类型: ${type}。请使用源码模式。</div>
     </div>
   `;
 }
@@ -314,7 +314,7 @@ function renderTextInput(params: {
     (isSensitive
       ? "••••"
       : schema.default !== undefined
-        ? `Default: ${String(schema.default)}`
+        ? `默认: ${String(schema.default)}`
         : "");
   const displayValue = value ?? "";
 
@@ -330,39 +330,38 @@ function renderTextInput(params: {
           .value=${displayValue == null ? "" : String(displayValue)}
           ?disabled=${disabled}
           @input=${(e: Event) => {
-            const raw = (e.target as HTMLInputElement).value;
-            if (inputType === "number") {
-              if (raw.trim() === "") {
-                onPatch(path, undefined);
-                return;
-              }
-              const parsed = Number(raw);
-              onPatch(path, Number.isNaN(parsed) ? raw : parsed);
-              return;
-            }
-            onPatch(path, raw);
-          }}
+      const raw = (e.target as HTMLInputElement).value;
+      if (inputType === "number") {
+        if (raw.trim() === "") {
+          onPatch(path, undefined);
+          return;
+        }
+        const parsed = Number(raw);
+        onPatch(path, Number.isNaN(parsed) ? raw : parsed);
+        return;
+      }
+      onPatch(path, raw);
+    }}
           @change=${(e: Event) => {
-            if (inputType === "number") {
-              return;
-            }
-            const raw = (e.target as HTMLInputElement).value;
-            onPatch(path, raw.trim());
-          }}
+      if (inputType === "number") {
+        return;
+      }
+      const raw = (e.target as HTMLInputElement).value;
+      onPatch(path, raw.trim());
+    }}
         />
-        ${
-          schema.default !== undefined
-            ? html`
+        ${schema.default !== undefined
+      ? html`
           <button
             type="button"
             class="cfg-input__reset"
-            title="Reset to default"
+            title="重置为默认"
             ?disabled=${disabled}
             @click=${() => onPatch(path, schema.default)}
           >↺</button>
         `
-            : nothing
-        }
+      : nothing
+    }
       </div>
     </div>
   `;
@@ -402,10 +401,10 @@ function renderNumberInput(params: {
           .value=${displayValue == null ? "" : String(displayValue)}
           ?disabled=${disabled}
           @input=${(e: Event) => {
-            const raw = (e.target as HTMLInputElement).value;
-            const parsed = raw === "" ? undefined : Number(raw);
-            onPatch(path, parsed);
-          }}
+      const raw = (e.target as HTMLInputElement).value;
+      const parsed = raw === "" ? undefined : Number(raw);
+      onPatch(path, parsed);
+    }}
         />
         <button
           type="button"
@@ -448,16 +447,16 @@ function renderSelect(params: {
         ?disabled=${disabled}
         .value=${currentIndex >= 0 ? String(currentIndex) : unset}
         @change=${(e: Event) => {
-          const val = (e.target as HTMLSelectElement).value;
-          onPatch(path, val === unset ? undefined : options[Number(val)]);
-        }}
+      const val = (e.target as HTMLSelectElement).value;
+      onPatch(path, val === unset ? undefined : options[Number(val)]);
+    }}
       >
-        <option value=${unset}>Select...</option>
+        <option value=${unset}>选择...</option>
         ${options.map(
-          (opt, idx) => html`
+      (opt, idx) => html`
           <option value=${String(idx)}>${String(opt)}</option>
         `,
-        )}
+    )}
       </select>
     </div>
   `;
@@ -487,7 +486,7 @@ function renderObject(params: {
   const entries = Object.entries(props);
 
   // Sort by hint order
-  const sorted = entries.toSorted((a, b) => {
+  const sorted = entries.sort((a: [string, JsonSchema], b: [string, JsonSchema]) => {
     const orderA = hintForPath([...path, a[0]], hints)?.order ?? 0;
     const orderB = hintForPath([...path, b[0]], hints)?.order ?? 0;
     if (orderA !== orderB) {
@@ -504,31 +503,30 @@ function renderObject(params: {
   if (path.length === 1) {
     return html`
       <div class="cfg-fields">
-        ${sorted.map(([propKey, node]) =>
-          renderNode({
-            schema: node,
-            value: obj[propKey],
-            path: [...path, propKey],
-            hints,
-            unsupported,
-            disabled,
-            onPatch,
-          }),
-        )}
-        ${
-          allowExtra
-            ? renderMapField({
-                schema: additional,
-                value: obj,
-                path,
-                hints,
-                unsupported,
-                disabled,
-                reservedKeys: reserved,
-                onPatch,
-              })
-            : nothing
-        }
+        ${sorted.map(([propKey, node]: [string, JsonSchema]) =>
+      renderNode({
+        schema: node,
+        value: obj[propKey],
+        path: [...path, propKey],
+        hints,
+        unsupported,
+        disabled,
+        onPatch,
+      }),
+    )}
+        ${allowExtra
+        ? renderMapField({
+          schema: additional,
+          value: obj,
+          path,
+          hints,
+          unsupported,
+          disabled,
+          reservedKeys: reserved,
+          onPatch,
+        })
+        : nothing
+      }
       </div>
     `;
   }
@@ -542,31 +540,30 @@ function renderObject(params: {
       </summary>
       ${help ? html`<div class="cfg-object__help">${help}</div>` : nothing}
       <div class="cfg-object__content">
-        ${sorted.map(([propKey, node]) =>
-          renderNode({
-            schema: node,
-            value: obj[propKey],
-            path: [...path, propKey],
-            hints,
-            unsupported,
-            disabled,
-            onPatch,
-          }),
-        )}
-        ${
-          allowExtra
-            ? renderMapField({
-                schema: additional,
-                value: obj,
-                path,
-                hints,
-                unsupported,
-                disabled,
-                reservedKeys: reserved,
-                onPatch,
-              })
-            : nothing
-        }
+        ${sorted.map(([propKey, node]: [string, JsonSchema]) =>
+    renderNode({
+      schema: node,
+      value: obj[propKey],
+      path: [...path, propKey],
+      hints,
+      unsupported,
+      disabled,
+      onPatch,
+    }),
+  )}
+        ${allowExtra
+      ? renderMapField({
+        schema: additional,
+        value: obj,
+        path,
+        hints,
+        unsupported,
+        disabled,
+        reservedKeys: reserved,
+        onPatch,
+      })
+      : nothing
+    }
       </div>
     </details>
   `;
@@ -593,7 +590,7 @@ function renderArray(params: {
     return html`
       <div class="cfg-field cfg-field--error">
         <div class="cfg-field__label">${label}</div>
-        <div class="cfg-field__error">Unsupported array schema. Use Raw mode.</div>
+        <div class="cfg-field__error">不支持的数组架构。请使用源码模式。</div>
       </div>
     `;
   }
@@ -604,66 +601,65 @@ function renderArray(params: {
     <div class="cfg-array">
       <div class="cfg-array__header">
         ${showLabel ? html`<span class="cfg-array__label">${label}</span>` : nothing}
-        <span class="cfg-array__count">${arr.length} item${arr.length !== 1 ? "s" : ""}</span>
+        <span class="cfg-array__count">${arr.length} 项</span>
         <button
           type="button"
           class="cfg-array__add"
           ?disabled=${disabled}
           @click=${() => {
-            const next = [...arr, defaultValue(itemsSchema)];
-            onPatch(path, next);
-          }}
+      const next = [...arr, defaultValue(itemsSchema)];
+      onPatch(path, next);
+    }}
         >
           <span class="cfg-array__add-icon">${icons.plus}</span>
-          Add
+          添加
         </button>
       </div>
       ${help ? html`<div class="cfg-array__help">${help}</div>` : nothing}
 
-      ${
-        arr.length === 0
-          ? html`
-              <div class="cfg-array__empty">No items yet. Click "Add" to create one.</div>
+      ${arr.length === 0
+      ? html`
+              <div class="cfg-array__empty">暂无条目。点击“添加”创建。</div>
             `
-          : html`
+      : html`
         <div class="cfg-array__items">
           ${arr.map(
-            (item, idx) => html`
+        (item, idx) => html`
             <div class="cfg-array__item">
               <div class="cfg-array__item-header">
                 <span class="cfg-array__item-index">#${idx + 1}</span>
                 <button
                   type="button"
                   class="cfg-array__item-remove"
-                  title="Remove item"
+                  title="移除条目"
                   ?disabled=${disabled}
                   @click=${() => {
-                    const next = [...arr];
-                    next.splice(idx, 1);
-                    onPatch(path, next);
-                  }}
+            const next = [...arr];
+            next.splice(idx, 1);
+            onPatch(path, next);
+          }}
                 >
                   ${icons.trash}
                 </button>
               </div>
               <div class="cfg-array__item-content">
                 ${renderNode({
-                  schema: itemsSchema,
-                  value: item,
-                  path: [...path, idx],
-                  hints,
-                  unsupported,
-                  disabled,
-                  showLabel: false,
-                  onPatch,
-                })}
+            schema: itemsSchema,
+            value: item,
+            path: [...path, idx],
+            hints,
+            unsupported,
+            disabled,
+            showLabel: false,
+            onPatch,
+          })}
               </div>
             </div>
           `,
-          )}
+      )}
         </div>
       `
-      }
+    }
     </div>
   `;
 }
@@ -685,39 +681,38 @@ function renderMapField(params: {
   return html`
     <div class="cfg-map">
       <div class="cfg-map__header">
-        <span class="cfg-map__label">Custom entries</span>
+        <span class="cfg-map__label">自定义条目</span>
         <button
           type="button"
           class="cfg-map__add"
           ?disabled=${disabled}
           @click=${() => {
-            const next = { ...value };
-            let index = 1;
-            let key = `custom-${index}`;
-            while (key in next) {
-              index += 1;
-              key = `custom-${index}`;
-            }
-            next[key] = anySchema ? {} : defaultValue(schema);
-            onPatch(path, next);
-          }}
+      const next = { ...value };
+      let index = 1;
+      let key = `custom-${index}`;
+      while (key in next) {
+        index += 1;
+        key = `custom-${index}`;
+      }
+      next[key] = anySchema ? {} : defaultValue(schema);
+      onPatch(path, next);
+    }}
         >
           <span class="cfg-map__add-icon">${icons.plus}</span>
-          Add Entry
+          添加条目
         </button>
       </div>
 
-      ${
-        entries.length === 0
-          ? html`
-              <div class="cfg-map__empty">No custom entries.</div>
+      ${entries.length === 0
+      ? html`
+              <div class="cfg-map__empty">无自定义条目。</div>
             `
-          : html`
+      : html`
         <div class="cfg-map__items">
           ${entries.map(([key, entryValue]) => {
-            const valuePath = [...path, key];
-            const fallback = jsonValue(entryValue);
-            return html`
+        const valuePath = [...path, key];
+        const fallback = jsonValue(entryValue);
+        return html`
               <div class="cfg-map__item">
                 <div class="cfg-map__item-key">
                   <input
@@ -727,24 +722,23 @@ function renderMapField(params: {
                     .value=${key}
                     ?disabled=${disabled}
                     @change=${(e: Event) => {
-                      const nextKey = (e.target as HTMLInputElement).value.trim();
-                      if (!nextKey || nextKey === key) {
-                        return;
-                      }
-                      const next = { ...value };
-                      if (nextKey in next) {
-                        return;
-                      }
-                      next[nextKey] = next[key];
-                      delete next[key];
-                      onPatch(path, next);
-                    }}
+            const nextKey = (e.target as HTMLInputElement).value.trim();
+            if (!nextKey || nextKey === key) {
+              return;
+            }
+            const next = { ...value };
+            if (nextKey in next) {
+              return;
+            }
+            next[nextKey] = next[key];
+            delete next[key];
+            onPatch(path, next);
+          }}
                   />
                 </div>
                 <div class="cfg-map__item-value">
-                  ${
-                    anySchema
-                      ? html`
+                  ${anySchema
+            ? html`
                         <textarea
                           class="cfg-textarea cfg-textarea--sm"
                           placeholder="JSON value"
@@ -752,51 +746,51 @@ function renderMapField(params: {
                           .value=${fallback}
                           ?disabled=${disabled}
                           @change=${(e: Event) => {
-                            const target = e.target as HTMLTextAreaElement;
-                            const raw = target.value.trim();
-                            if (!raw) {
-                              onPatch(valuePath, undefined);
-                              return;
-                            }
-                            try {
-                              onPatch(valuePath, JSON.parse(raw));
-                            } catch {
-                              target.value = fallback;
-                            }
-                          }}
+                const target = e.target as HTMLTextAreaElement;
+                const raw = target.value.trim();
+                if (!raw) {
+                  onPatch(valuePath, undefined);
+                  return;
+                }
+                try {
+                  onPatch(valuePath, JSON.parse(raw));
+                } catch {
+                  target.value = fallback;
+                }
+              }}
                         ></textarea>
                       `
-                      : renderNode({
-                          schema,
-                          value: entryValue,
-                          path: valuePath,
-                          hints,
-                          unsupported,
-                          disabled,
-                          showLabel: false,
-                          onPatch,
-                        })
-                  }
+            : renderNode({
+              schema,
+              value: entryValue,
+              path: valuePath,
+              hints,
+              unsupported,
+              disabled,
+              showLabel: false,
+              onPatch,
+            })
+          }
                 </div>
                 <button
                   type="button"
                   class="cfg-map__item-remove"
-                  title="Remove entry"
+                  title="移除条目"
                   ?disabled=${disabled}
                   @click=${() => {
-                    const next = { ...value };
-                    delete next[key];
-                    onPatch(path, next);
-                  }}
+            const next = { ...value };
+            delete next[key];
+            onPatch(path, next);
+          }}
                 >
                   ${icons.trash}
                 </button>
               </div>
             `;
-          })}
+      })}
         </div>
       `
-      }
+    }
     </div>
   `;
 }

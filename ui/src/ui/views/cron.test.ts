@@ -46,7 +46,7 @@ describe("cron view", () => {
     const container = document.createElement("div");
     render(renderCron(createProps()), container);
 
-    expect(container.textContent).toContain("Select a job to inspect run history.");
+    expect(container.textContent).toContain("请选择一个任务以查看运行记录。");
   });
 
   it("loads run history when clicking a job row", () => {
@@ -89,7 +89,7 @@ describe("cron view", () => {
     expect(selected).not.toBeNull();
 
     const runsButton = Array.from(container.querySelectorAll("button")).find(
-      (btn) => btn.textContent?.trim() === "Runs",
+      (btn) => btn.textContent?.trim() === "记录",
     );
     expect(runsButton).not.toBeUndefined();
     runsButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));

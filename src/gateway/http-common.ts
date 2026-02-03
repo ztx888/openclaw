@@ -15,12 +15,12 @@ export function sendText(res: ServerResponse, status: number, body: string) {
 
 export function sendMethodNotAllowed(res: ServerResponse, allow = "POST") {
   res.setHeader("Allow", allow);
-  sendText(res, 405, "Method Not Allowed");
+  sendText(res, 405, "方法不被允许 (Method Not Allowed)");
 }
 
 export function sendUnauthorized(res: ServerResponse) {
   sendJson(res, 401, {
-    error: { message: "Unauthorized", type: "unauthorized" },
+    error: { message: "未授权 (Unauthorized)", type: "unauthorized" },
   });
 }
 

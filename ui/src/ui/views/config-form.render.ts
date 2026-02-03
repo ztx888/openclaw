@@ -239,39 +239,39 @@ const sectionIcons = {
 // Section metadata
 export const SECTION_META: Record<string, { label: string; description: string }> = {
   env: {
-    label: "Environment Variables",
-    description: "Environment variables passed to the gateway process",
+    label: "环境变量",
+    description: "传递给网关进程的环境变量",
   },
-  update: { label: "Updates", description: "Auto-update settings and release channel" },
-  agents: { label: "Agents", description: "Agent configurations, models, and identities" },
-  auth: { label: "Authentication", description: "API keys and authentication profiles" },
+  update: { label: "更新", description: "自动更新设置及发布通道" },
+  agents: { label: "代理", description: "代理配置、模型及身份" },
+  auth: { label: "认证", description: "API 密钥及认证配置文件" },
   channels: {
-    label: "Channels",
-    description: "Messaging channels (Telegram, Discord, Slack, etc.)",
+    label: "渠道",
+    description: "消息渠道 (Telegram, Discord, Slack 等)",
   },
-  messages: { label: "Messages", description: "Message handling and routing settings" },
-  commands: { label: "Commands", description: "Custom slash commands" },
-  hooks: { label: "Hooks", description: "Webhooks and event hooks" },
-  skills: { label: "Skills", description: "Skill packs and capabilities" },
-  tools: { label: "Tools", description: "Tool configurations (browser, search, etc.)" },
-  gateway: { label: "Gateway", description: "Gateway server settings (port, auth, binding)" },
-  wizard: { label: "Setup Wizard", description: "Setup wizard state and history" },
+  messages: { label: "消息", description: "消息处理及路由设置" },
+  commands: { label: "命令", description: "自定义斜杠命令" },
+  hooks: { label: "钩子", description: "Webhooks 及事件钩子" },
+  skills: { label: "技能", description: "技能包及能力" },
+  tools: { label: "工具", description: "工具配置 (浏览器, 搜索等)" },
+  gateway: { label: "网关", description: "网关服务器设置 (端口, 认证, 绑定)" },
+  wizard: { label: "设置向导", description: "设置向导状态及历史" },
   // Additional sections
-  meta: { label: "Metadata", description: "Gateway metadata and version information" },
-  logging: { label: "Logging", description: "Log levels and output configuration" },
-  browser: { label: "Browser", description: "Browser automation settings" },
-  ui: { label: "UI", description: "User interface preferences" },
-  models: { label: "Models", description: "AI model configurations and providers" },
-  bindings: { label: "Bindings", description: "Key bindings and shortcuts" },
-  broadcast: { label: "Broadcast", description: "Broadcast and notification settings" },
-  audio: { label: "Audio", description: "Audio input/output settings" },
-  session: { label: "Session", description: "Session management and persistence" },
-  cron: { label: "Cron", description: "Scheduled tasks and automation" },
-  web: { label: "Web", description: "Web server and API settings" },
-  discovery: { label: "Discovery", description: "Service discovery and networking" },
-  canvasHost: { label: "Canvas Host", description: "Canvas rendering and display" },
-  talk: { label: "Talk", description: "Voice and speech settings" },
-  plugins: { label: "Plugins", description: "Plugin management and extensions" },
+  meta: { label: "元数据", description: "网关元数据及版本信息" },
+  logging: { label: "日志", description: "日志级别及输出配置" },
+  browser: { label: "浏览器", description: "浏览器自动化设置" },
+  ui: { label: "界面", description: "用户界面首选项" },
+  models: { label: "模型", description: "AI 模型配置及提供商" },
+  bindings: { label: "绑定", description: "键位绑定及快捷方式" },
+  broadcast: { label: "广播", description: "广播及通知设置" },
+  audio: { label: "音频", description: "音频输入/输出设置" },
+  session: { label: "会话", description: "会话管理及持久化" },
+  cron: { label: "定时任务", description: "计划任务及自动化" },
+  web: { label: "Web 服务", description: "Web 服务器及 API 设置" },
+  discovery: { label: "发现", description: "服务发现及网络" },
+  canvasHost: { label: "画布主机", description: "画布渲染及显示" },
+  talk: { label: "语音", description: "语音及对话设置" },
+  plugins: { label: "插件", description: "插件管理及扩展" },
 };
 
 function getSectionIcon(key: string) {
@@ -355,14 +355,14 @@ function schemaMatches(schema: JsonSchema, query: string): boolean {
 export function renderConfigForm(props: ConfigFormProps) {
   if (!props.schema) {
     return html`
-      <div class="muted">Schema unavailable.</div>
+      <div class="muted">架构不可用。</div>
     `;
   }
   const schema = props.schema;
   const value = props.value ?? {};
   if (schemaType(schema) !== "object" || !schema.properties) {
     return html`
-      <div class="callout danger">Unsupported schema. Use Raw.</div>
+      <div class="callout danger">不支持的架构。请使用源码模式。</div>
     `;
   }
   const unsupported = new Set(props.unsupportedPaths ?? []);
@@ -371,7 +371,7 @@ export function renderConfigForm(props: ConfigFormProps) {
   const activeSection = props.activeSection;
   const activeSubsection = props.activeSubsection ?? null;
 
-  const entries = Object.entries(properties).toSorted((a, b) => {
+  const entries = Object.entries(properties).sort((a: [string, JsonSchema], b: [string, JsonSchema]) => {
     const orderA = hintForPath([a[0]], props.uiHints)?.order ?? 50;
     const orderB = hintForPath([b[0]], props.uiHints)?.order ?? 50;
     if (orderA !== orderB) {
@@ -380,7 +380,7 @@ export function renderConfigForm(props: ConfigFormProps) {
     return a[0].localeCompare(b[0]);
   });
 
-  const filteredEntries = entries.filter(([key, node]) => {
+  const filteredEntries = entries.filter(([key, node]: [string, JsonSchema]) => {
     if (activeSection && key !== activeSection) {
       return false;
     }
@@ -413,7 +413,7 @@ export function renderConfigForm(props: ConfigFormProps) {
       <div class="config-empty">
         <div class="config-empty__icon">${icons.search}</div>
         <div class="config-empty__text">
-          ${searchQuery ? `No settings match "${searchQuery}"` : "No settings in this section"}
+          ${searchQuery ? `没有设置匹配 "${searchQuery}"` : "此部分无设置"}
         </div>
       </div>
     `;
@@ -421,82 +421,79 @@ export function renderConfigForm(props: ConfigFormProps) {
 
   return html`
     <div class="config-form config-form--modern">
-      ${
-        subsectionContext
-          ? (() => {
-              const { sectionKey, subsectionKey, schema: node } = subsectionContext;
-              const hint = hintForPath([sectionKey, subsectionKey], props.uiHints);
-              const label = hint?.label ?? node.title ?? humanize(subsectionKey);
-              const description = hint?.help ?? node.description ?? "";
-              const sectionValue = value[sectionKey];
-              const scopedValue =
-                sectionValue && typeof sectionValue === "object"
-                  ? (sectionValue as Record<string, unknown>)[subsectionKey]
-                  : undefined;
-              const id = `config-section-${sectionKey}-${subsectionKey}`;
-              return html`
+      ${subsectionContext
+      ? (() => {
+        const { sectionKey, subsectionKey, schema: node } = subsectionContext;
+        const hint = hintForPath([sectionKey, subsectionKey], props.uiHints);
+        const label = hint?.label ?? node.title ?? humanize(subsectionKey);
+        const description = hint?.help ?? node.description ?? "";
+        const sectionValue = value[sectionKey];
+        const scopedValue =
+          sectionValue && typeof sectionValue === "object"
+            ? (sectionValue as Record<string, unknown>)[subsectionKey]
+            : undefined;
+        const id = `config-section-${sectionKey}-${subsectionKey}`;
+        return html`
               <section class="config-section-card" id=${id}>
                 <div class="config-section-card__header">
                   <span class="config-section-card__icon">${getSectionIcon(sectionKey)}</span>
                   <div class="config-section-card__titles">
                     <h3 class="config-section-card__title">${label}</h3>
-                    ${
-                      description
-                        ? html`<p class="config-section-card__desc">${description}</p>`
-                        : nothing
-                    }
+                    ${description
+            ? html`<p class="config-section-card__desc">${description}</p>`
+            : nothing
+          }
                   </div>
                 </div>
                 <div class="config-section-card__content">
                   ${renderNode({
-                    schema: node,
-                    value: scopedValue,
-                    path: [sectionKey, subsectionKey],
-                    hints: props.uiHints,
-                    unsupported,
-                    disabled: props.disabled ?? false,
-                    showLabel: false,
-                    onPatch: props.onPatch,
-                  })}
+            schema: node,
+            value: scopedValue,
+            path: [sectionKey, subsectionKey],
+            hints: props.uiHints,
+            unsupported,
+            disabled: props.disabled ?? false,
+            showLabel: false,
+            onPatch: props.onPatch,
+          })}
                 </div>
               </section>
             `;
-            })()
-          : filteredEntries.map(([key, node]) => {
-              const meta = SECTION_META[key] ?? {
-                label: key.charAt(0).toUpperCase() + key.slice(1),
-                description: node.description ?? "",
-              };
+      })()
+      : filteredEntries.map(([key, node]: [string, JsonSchema]) => {
+        const meta = SECTION_META[key] ?? {
+          label: key.charAt(0).toUpperCase() + key.slice(1),
+          description: node.description ?? "",
+        };
 
-              return html`
+        return html`
               <section class="config-section-card" id="config-section-${key}">
                 <div class="config-section-card__header">
                   <span class="config-section-card__icon">${getSectionIcon(key)}</span>
                   <div class="config-section-card__titles">
                     <h3 class="config-section-card__title">${meta.label}</h3>
-                    ${
-                      meta.description
-                        ? html`<p class="config-section-card__desc">${meta.description}</p>`
-                        : nothing
-                    }
+                    ${meta.description
+            ? html`<p class="config-section-card__desc">${meta.description}</p>`
+            : nothing
+          }
                   </div>
                 </div>
                 <div class="config-section-card__content">
                   ${renderNode({
-                    schema: node,
-                    value: value[key],
-                    path: [key],
-                    hints: props.uiHints,
-                    unsupported,
-                    disabled: props.disabled ?? false,
-                    showLabel: false,
-                    onPatch: props.onPatch,
-                  })}
+            schema: node,
+            value: value[key],
+            path: [key],
+            hints: props.uiHints,
+            unsupported,
+            disabled: props.disabled ?? false,
+            showLabel: false,
+            onPatch: props.onPatch,
+          })}
                 </div>
               </section>
             `;
-            })
-      }
+      })
+    }
     </div>
   `;
 }

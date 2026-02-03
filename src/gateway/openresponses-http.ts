@@ -142,7 +142,7 @@ function applyToolChoice(params: {
 
   if (toolChoice === "required") {
     if (tools.length === 0) {
-      throw new Error("tool_choice=required but no tools were provided");
+      throw new Error("tool_choice=required 但未提供 tools");
     }
     return {
       tools,
@@ -153,11 +153,11 @@ function applyToolChoice(params: {
   if (typeof toolChoice === "object" && toolChoice.type === "function") {
     const targetName = toolChoice.function?.name?.trim();
     if (!targetName) {
-      throw new Error("tool_choice.function.name is required");
+      throw new Error("tool_choice.function.name 是必填的");
     }
     const matched = tools.filter((tool) => tool.function?.name === targetName);
     if (matched.length === 0) {
-      throw new Error(`tool_choice requested unknown tool: ${targetName}`);
+      throw new Error(`tool_choice 请求了未知工具: ${targetName}`);
     }
     return {
       tools: matched,
@@ -260,12 +260,12 @@ function createEmptyUsage(): Usage {
 function toUsage(
   value:
     | {
-        input?: number;
-        output?: number;
-        cacheRead?: number;
-        cacheWrite?: number;
-        total?: number;
-      }
+      input?: number;
+      output?: number;
+      cacheRead?: number;
+      cacheWrite?: number;
+      total?: number;
+    }
     | undefined,
 ): Usage {
   if (!value) {
@@ -288,8 +288,8 @@ function extractUsageFromResult(result: unknown): Usage {
   const usage = meta && typeof meta === "object" ? meta.agentMeta?.usage : undefined;
   return toUsage(
     usage as
-      | { input?: number; output?: number; cacheRead?: number; cacheWrite?: number; total?: number }
-      | undefined,
+    | { input?: number; output?: number; cacheRead?: number; cacheWrite?: number; total?: number }
+    | undefined,
   );
 }
 
@@ -369,7 +369,7 @@ export async function handleOpenResponsesHttpRequest(
   const parseResult = CreateResponseBodySchema.safeParse(body);
   if (!parseResult.success) {
     const issue = parseResult.error.issues[0];
-    const message = issue ? `${issue.path.join(".")}: ${issue.message}` : "Invalid request body";
+    const message = issue ? `${issue.path.join(".")}: ${issue.message}` : "无效的请求体 (Invalid request body)";
     sendJson(res, 400, {
       error: { message, type: "invalid_request_error" },
     });
@@ -399,7 +399,7 @@ export async function handleOpenResponsesHttpRequest(
               const sourceType =
                 source.type === "base64" || source.type === "url" ? source.type : undefined;
               if (!sourceType) {
-                throw new Error("input_image must have 'source.url' or 'source.data'");
+                throw new Error("input_image 必须包含 'source.url' 或 'source.data'");
               }
               const imageSource: InputImageSource = {
                 type: sourceType,
@@ -423,7 +423,7 @@ export async function handleOpenResponsesHttpRequest(
               const sourceType =
                 source.type === "base64" || source.type === "url" ? source.type : undefined;
               if (!sourceType) {
-                throw new Error("input_file must have 'source.url' or 'source.data'");
+                throw new Error("input_file 必须包含 'source.url' 或 'source.data'");
               }
               const file = await extractFileContentFromSource({
                 source: {
@@ -495,7 +495,7 @@ export async function handleOpenResponsesHttpRequest(
   if (!prompt.message) {
     sendJson(res, 400, {
       error: {
-        message: "Missing user message in `input`.",
+        message: "`input` 中缺少用户消息。",
         type: "invalid_request_error",
       },
     });
@@ -537,7 +537,7 @@ export async function handleOpenResponsesHttpRequest(
       const pendingToolCalls =
         meta && typeof meta === "object"
           ? (meta as { pendingToolCalls?: Array<{ id: string; name: string; arguments: string }> })
-              .pendingToolCalls
+            .pendingToolCalls
           : undefined;
 
       // If agent called a client tool, return function_call instead of text
@@ -566,10 +566,10 @@ export async function handleOpenResponsesHttpRequest(
       const content =
         Array.isArray(payloads) && payloads.length > 0
           ? payloads
-              .map((p) => (typeof p.text === "string" ? p.text : ""))
-              .filter(Boolean)
-              .join("\n\n")
-          : "No response from OpenClaw.";
+            .map((p) => (typeof p.text === "string" ? p.text : ""))
+            .filter(Boolean)
+            .join("\n\n")
+          : "OpenClaw 未返回响应。";
 
       const response = createResponseResource({
         id: responseId,
@@ -604,7 +604,7 @@ export async function handleOpenResponsesHttpRequest(
   let accumulatedText = "";
   let sawAssistantDelta = false;
   let closed = false;
-  let unsubscribe = () => {};
+  let unsubscribe = () => { };
   let finalUsage: Usage | undefined;
   let finalizeRequested: { status: ResponseResource["status"]; text: string } | null = null;
 
@@ -737,7 +737,7 @@ export async function handleOpenResponsesHttpRequest(
     if (evt.stream === "lifecycle") {
       const phase = evt.data?.phase;
       if (phase === "end" || phase === "error") {
-        const finalText = accumulatedText || "No response from OpenClaw.";
+        const finalText = accumulatedText || "OpenClaw 未返回响应。";
         const finalStatus = phase === "error" ? "failed" : "completed";
         requestFinalize(finalStatus, finalText);
       }
@@ -787,10 +787,10 @@ export async function handleOpenResponsesHttpRequest(
         const pendingToolCalls =
           meta && typeof meta === "object"
             ? (
-                meta as {
-                  pendingToolCalls?: Array<{ id: string; name: string; arguments: string }>;
-                }
-              ).pendingToolCalls
+              meta as {
+                pendingToolCalls?: Array<{ id: string; name: string; arguments: string }>;
+              }
+            ).pendingToolCalls
             : undefined;
 
         // If agent called a client tool, emit function_call instead of text
@@ -861,9 +861,9 @@ export async function handleOpenResponsesHttpRequest(
         const content =
           Array.isArray(payloads) && payloads.length > 0
             ? payloads
-                .map((p) => (typeof p.text === "string" ? p.text : ""))
-                .filter(Boolean)
-                .join("\n\n")
+              .map((p) => (typeof p.text === "string" ? p.text : ""))
+              .filter(Boolean)
+              .join("\n\n")
             : "No response from OpenClaw.";
 
         accumulatedText = content;

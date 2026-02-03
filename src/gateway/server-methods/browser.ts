@@ -73,7 +73,7 @@ function resolveBrowserNode(nodes: NodeSession[], query: string): NodeSession | 
     return null;
   }
   throw new Error(
-    `ambiguous node: ${q} (matches: ${matches
+    `不明确的节点: ${q} (匹配: ${matches
       .map((node) => node.displayName || node.remoteIp || node.nodeId)
       .join(", ")})`,
   );
@@ -91,7 +91,7 @@ function resolveBrowserNodeTarget(params: {
   const browserNodes = params.nodes.filter((node) => isBrowserNode(node));
   if (browserNodes.length === 0) {
     if (policy?.node?.trim()) {
-      throw new Error("No connected browser-capable nodes.");
+      throw new Error("没有连接的支持浏览器的节点。");
     }
     return null;
   }
@@ -99,7 +99,7 @@ function resolveBrowserNodeTarget(params: {
   if (requested) {
     const resolved = resolveBrowserNode(browserNodes, requested);
     if (!resolved) {
-      throw new Error(`Configured browser node not connected: ${requested}`);
+      throw new Error(`配置的浏览器节点未连接: ${requested}`);
     }
     return resolved;
   }
@@ -161,7 +161,7 @@ export const browserHandlers: GatewayRequestHandlers = {
       respond(
         false,
         undefined,
-        errorShape(ErrorCodes.INVALID_REQUEST, "method and path are required"),
+        errorShape(ErrorCodes.INVALID_REQUEST, "需要 method 和 path"),
       );
       return;
     }
@@ -169,7 +169,7 @@ export const browserHandlers: GatewayRequestHandlers = {
       respond(
         false,
         undefined,
-        errorShape(ErrorCodes.INVALID_REQUEST, "method must be GET, POST, or DELETE"),
+        errorShape(ErrorCodes.INVALID_REQUEST, "method 必须是 GET, POST 或 DELETE"),
       );
       return;
     }
@@ -197,7 +197,7 @@ export const browserHandlers: GatewayRequestHandlers = {
         respond(
           false,
           undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, "node command not allowed", {
+          errorShape(ErrorCodes.INVALID_REQUEST, "不允许的节点命令", {
             details: { reason: allowed.reason, command: "browser.proxy" },
           }),
         );
@@ -223,7 +223,7 @@ export const browserHandlers: GatewayRequestHandlers = {
         respond(
           false,
           undefined,
-          errorShape(ErrorCodes.UNAVAILABLE, res.error?.message ?? "node invoke failed", {
+          errorShape(ErrorCodes.UNAVAILABLE, res.error?.message ?? "节点调用失败", {
             details: { nodeError: res.error ?? null },
           }),
         );
@@ -232,7 +232,7 @@ export const browserHandlers: GatewayRequestHandlers = {
       const payload = res.payloadJSON ? safeParseJson(res.payloadJSON) : res.payload;
       const proxy = payload && typeof payload === "object" ? (payload as BrowserProxyResult) : null;
       if (!proxy || !("result" in proxy)) {
-        respond(false, undefined, errorShape(ErrorCodes.UNAVAILABLE, "browser proxy failed"));
+        respond(false, undefined, errorShape(ErrorCodes.UNAVAILABLE, "浏览器代理失败"));
         return;
       }
       const mapping = await persistProxyFiles(proxy.files);
@@ -243,7 +243,7 @@ export const browserHandlers: GatewayRequestHandlers = {
 
     const ready = await startBrowserControlServiceFromConfig();
     if (!ready) {
-      respond(false, undefined, errorShape(ErrorCodes.UNAVAILABLE, "browser control is disabled"));
+      respond(false, undefined, errorShape(ErrorCodes.UNAVAILABLE, "浏览器控制已禁用"));
       return;
     }
 
@@ -266,7 +266,7 @@ export const browserHandlers: GatewayRequestHandlers = {
       const message =
         result.body && typeof result.body === "object" && "error" in result.body
           ? String((result.body as { error?: unknown }).error)
-          : `browser request failed (${result.status})`;
+          : `浏览器请求失败 (${result.status})`;
       const code = result.status >= 500 ? ErrorCodes.UNAVAILABLE : ErrorCodes.INVALID_REQUEST;
       respond(false, undefined, errorShape(code, message, { details: result.body }));
       return;

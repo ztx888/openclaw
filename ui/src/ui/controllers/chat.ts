@@ -34,12 +34,12 @@ export async function loadChatHistory(state: ChatState) {
   state.chatLoading = true;
   state.lastError = null;
   try {
-    const res = await state.client.request("chat.history", {
+    const res = (await state.client.request("chat.history", {
       sessionKey: state.sessionKey,
       limit: 200,
-    });
-    state.chatMessages = Array.isArray(res.messages) ? res.messages : [];
-    state.chatThinkingLevel = res.thinkingLevel ?? null;
+    })) as { messages?: unknown[]; thinkingLevel?: string | null } | null;
+    state.chatMessages = Array.isArray(res?.messages) ? res.messages : [];
+    state.chatThinkingLevel = res?.thinkingLevel ?? null;
   } catch (err) {
     state.lastError = String(err);
   } finally {
@@ -105,18 +105,18 @@ export async function sendChatMessage(
   // Convert attachments to API format
   const apiAttachments = hasAttachments
     ? attachments
-        .map((att) => {
-          const parsed = dataUrlToBase64(att.dataUrl);
-          if (!parsed) {
-            return null;
-          }
-          return {
-            type: "image",
-            mimeType: parsed.mimeType,
-            content: parsed.content,
-          };
-        })
-        .filter((a): a is NonNullable<typeof a> => a !== null)
+      .map((att) => {
+        const parsed = dataUrlToBase64(att.dataUrl);
+        if (!parsed) {
+          return null;
+        }
+        return {
+          type: "image",
+          mimeType: parsed.mimeType,
+          content: parsed.content,
+        };
+      })
+      .filter((a): a is NonNullable<typeof a> => a !== null)
     : undefined;
 
   try {
@@ -138,7 +138,7 @@ export async function sendChatMessage(
       ...state.chatMessages,
       {
         role: "assistant",
-        content: [{ type: "text", text: "Error: " + error }],
+        content: [{ type: "text", text: "错误: " + error }],
         timestamp: Date.now(),
       },
     ];
@@ -202,7 +202,7 @@ export function handleChatEvent(state: ChatState, payload?: ChatEventPayload) {
     state.chatStream = null;
     state.chatRunId = null;
     state.chatStreamStartedAt = null;
-    state.lastError = payload.errorMessage ?? "chat error";
+    state.lastError = payload.errorMessage ?? "聊天错误";
   }
   return payload.state;
 }
