@@ -145,7 +145,7 @@ export function connectGateway(host: GatewayHost) {
       host.connected = false;
       // Code 1012 = Service Restart (expected during config saves, don't show as error)
       if (code !== 1012) {
-        host.lastError = `disconnected (${code}): ${reason || "no reason"}`;
+        host.lastError = `已断开连接 (${code}): ${reason || "无原因"}`;
       }
     },
     onEvent: (evt) => handleGatewayEvent(host, evt),
@@ -254,10 +254,10 @@ function handleGatewayEventUnsafe(host: GatewayHost, evt: GatewayEventFrame) {
 export function applySnapshot(host: GatewayHost, hello: GatewayHelloOk) {
   const snapshot = hello.snapshot as
     | {
-        presence?: PresenceEntry[];
-        health?: HealthSnapshot;
-        sessionDefaults?: SessionDefaultsSnapshot;
-      }
+      presence?: PresenceEntry[];
+      health?: HealthSnapshot;
+      sessionDefaults?: SessionDefaultsSnapshot;
+    }
     | undefined;
   if (snapshot?.presence && Array.isArray(snapshot.presence)) {
     host.presenceEntries = snapshot.presence;

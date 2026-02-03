@@ -416,7 +416,7 @@ function resolveExecApprovalsState(props: NodesProps): ExecApprovalsState {
   const ready = Boolean(form);
   const defaults = resolveExecApprovalsDefaults(form);
   const agents = resolveExecApprovalsAgents(props.configForm, form);
-  const targetNodes = resolveExecApprovalsNodes(props.nodes);
+  const targetNodes = resolveExecNodes(props.nodes);
   const target = props.execApprovalsTarget;
   let targetNodeId =
     target === "node" && props.execApprovalsTargetNodeId ? props.execApprovalsTargetNodeId : null;

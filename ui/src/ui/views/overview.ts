@@ -42,7 +42,7 @@ export function renderOverview(props: OverviewProps) {
     if (!hasToken && !hasPassword) {
       return html`
         <div class="muted" style="margin-top: 8px">
-          此 Gateway 需要认证。添加令牌(Token)或密码，然后点击连接。
+          此网关需要认证。添加令牌(Token)或密码，然后点击连接。
           <div style="margin-top: 6px">
             <span class="mono">openclaw dashboard --no-open</span> → 获取带 Token 的 URL<br />
             <span class="mono">openclaw doctor --generate-gateway-token</span> → 设置 Token
@@ -91,7 +91,7 @@ export function renderOverview(props: OverviewProps) {
     }
     return html`
       <div class="muted" style="margin-top: 8px">
-        当前页面为 HTTP 协议，浏览器阻止了设备身份验证。请使用 HTTPS (Tailscale Serve) 或在 Gateway 主机上打开
+        当前页面为 HTTP 协议，浏览器阻止了设备身份验证。请使用 HTTPS (Tailscale Serve) 或在网关主机上打开
         <span class="mono">http://127.0.0.1:18789</span>。
         <div style="margin-top: 6px">
           如果你必须停留在 HTTP，请设置
@@ -123,7 +123,7 @@ export function renderOverview(props: OverviewProps) {
   return html`
     <section class="grid grid-cols-2">
       <div class="card">
-        <div class="card-title">Gateway 访问</div>
+        <div class="card-title">网关访问</div>
         <div class="card-sub">仪表盘的连接地址及认证方式。</div>
         <div class="form-grid" style="margin-top: 16px;">
           <label class="field">
@@ -138,7 +138,7 @@ export function renderOverview(props: OverviewProps) {
             />
           </label>
           <label class="field">
-            <span>Gateway Token</span>
+            <span>网关令牌 (Gateway Token)</span>
             <input
               .value=${props.settings.token}
               @input=${(e: Event) => {
@@ -180,7 +180,7 @@ export function renderOverview(props: OverviewProps) {
 
       <div class="card">
         <div class="card-title">快照</div>
-        <div class="card-sub">最新的 Gateway 握手信息。</div>
+        <div class="card-sub">最新的网关握手信息。</div>
         <div class="stat-grid" style="margin-top: 16px;">
           <div class="stat">
             <div class="stat-label">状态</div>
@@ -227,7 +227,7 @@ export function renderOverview(props: OverviewProps) {
       <div class="card stat-card">
         <div class="stat-label">会话</div>
         <div class="stat-value">${props.sessionsCount ?? "无"}</div>
-        <div class="muted">Gateway 追踪的近期会话密钥。</div>
+        <div class="muted">网关追踪的近期会话密钥。</div>
       </div>
       <div class="card stat-card">
         <div class="stat-label">定时任务</div>
@@ -243,9 +243,9 @@ export function renderOverview(props: OverviewProps) {
       <div class="card-sub">远程控制设置的快速提醒。</div>
       <div class="note-grid" style="margin-top: 14px;">
         <div>
-          <div class="note-title">Tailscale Serve</div>
+          <div class="note-title">Tailscale 服务 (Serve)</div>
           <div class="muted">
-            推荐使用 Serve 模式，保持 Gateway 在 loopback 并使用 tailnet 认证。
+            推荐使用 Serve 模式，保持网关在 loopback 并使用 tailnet 认证。
           </div>
         </div>
         <div>
@@ -253,7 +253,7 @@ export function renderOverview(props: OverviewProps) {
           <div class="muted">使用 /new 或 sessions.patch 重置上下文。</div>
         </div>
         <div>
-          <div class="note-title">Cron 提醒</div>
+          <div class="note-title">定时提醒</div>
           <div class="muted">为循环运行的任务使用隔离的会话。</div>
         </div>
       </div>
